@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "618274547090",
+    "firebase_url": "https://comfymeal-51def.firebaseio.com",
+    "project_id": "comfymeal-51def",
+    "storage_bucket": "comfymeal-51def.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:618274547090:android:344268382533819ccdcd4b",
+        "android_client_info": {
+          "package_name": "com.comfymeal"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "618274547090-aejif9us2mkdrmhrg151jc0930im3k1r.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.comfymeal",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "618274547090-det3na3qsjhkamt2u82omfbgjesonea7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCaBspVzwUqmceppsnNc1mJMlh4yBdRKpg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "618274547090-det3na3qsjhkamt2u82omfbgjesonea7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
