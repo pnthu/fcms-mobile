@@ -22,8 +22,18 @@ class LoginScreen extends React.Component {
   _signIn = async () => {
     try {
       await GoogleSignin.hasPlayServices();
-      const userInfo = await GoogleSignin.signIn();
-      console.log({userInfo: userInfo, loggedIn: true});
+      await GoogleSignin.signIn().then(data => {
+        console.log('TEST ' + JSON.stringify(data));
+
+        const currentUser = GoogleSignin.getTokens().then(res => {
+          console.log('accessToken', res.accessToken); //<-------Get accessToken
+          var postData = {
+            access_token: res.accessToken,
+            code: data.idToken,
+          };
+        });
+      });
+      // console.log(this.getTokens());
       this.props.navigation.navigate('CustomerHome');
     } catch (error) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
@@ -61,7 +71,13 @@ class LoginScreen extends React.Component {
         <Text style={styles.introText}>or</Text>
         <TouchableOpacity>
           <LoginButton
-            style={{height: 30, width: '70%', alignSelf: 'center'}}
+            style={{
+              height: 40,
+              width: '70%',
+              alignSelf: 'center',
+            }}
+            publishPermissions={['publish_actions']}
+            permissions={['email', 'public_profile']}
             onLoginFinished={(error, result) => {
               if (error) {
                 console.log('login has error: ' + error);
@@ -70,9 +86,9 @@ class LoginScreen extends React.Component {
               } else {
                 AccessToken.getCurrentAccessToken().then(data => {
                   console.log(data.accessToken);
-                  
+
                   // console.log(data.userID);
-                  // console.log(data.permissions);
+                  console.log(data.permissions);
                   this.props.navigation.navigate('CustomerHome');
                 });
               }

@@ -31,6 +31,7 @@ const foodstalls = [
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque placerat elit maximus.',
     rating: 4,
     image: require('../../../assets/gongcha.jpeg'),
+    type: categories[1],
   },
   {
     name: 'KFC Vietnam',
@@ -38,6 +39,7 @@ const foodstalls = [
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque placerat elit maximus.',
     rating: 3,
     image: require('../../../assets/kfc.png'),
+    type: categories[0],
   },
   {
     name: 'Sumo BBQ',
@@ -45,6 +47,7 @@ const foodstalls = [
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque placerat elit maximus.',
     rating: 5,
     image: require('../../../assets/sumo.jpg'),
+    type: categories[2],
   },
   {
     name: 'Cali Broken Rice',
@@ -52,6 +55,7 @@ const foodstalls = [
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque placerat elit maximus.',
     rating: 4.5,
     image: require('../../../assets/cali.jpg'),
+    type: categories[3],
   },
   {
     name: 'Baoz Dimsum',
@@ -59,6 +63,7 @@ const foodstalls = [
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque placerat elit maximus.',
     rating: 3,
     image: require('../../../assets/baoz-dimsum.jpg'),
+    type: categories[5],
   },
   {
     name: 'Poke Saigon',
@@ -66,6 +71,7 @@ const foodstalls = [
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque placerat elit maximus.',
     rating: 5,
     image: require('../../../assets/salad.jpg'),
+    type: categories[6],
   },
   {
     name: 'Uchi Sushi',
@@ -73,6 +79,7 @@ const foodstalls = [
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque placerat elit maximus.',
     rating: 4,
     image: require('../../../assets/sushi.jpg'),
+    type: categories[4],
   },
   {
     name: 'Hutong Hot Pot',
@@ -80,6 +87,7 @@ const foodstalls = [
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque placerat elit maximus.',
     rating: 4.5,
     image: require('../../../assets/hotpot.jpg'),
+    type: categories[2],
   },
 ];
 
@@ -124,7 +132,7 @@ const renderCarousel = ({item, index}) => {
 };
 
 class StallListScreen extends React.Component {
-  render() {
+  render = () => {
     const {navigation} = this.props;
 
     return (
@@ -152,6 +160,7 @@ class StallListScreen extends React.Component {
               renderItem={renderCarousel}
               itemWidth={Dimensions.get('window').width / 2}
               sliderWidth={Dimensions.get('window').width}
+              firstItem={1}
             />
           </View>
           <Text style={styles.topRating}>Choose your favorite food</Text>
@@ -210,7 +219,7 @@ class StallListScreen extends React.Component {
         </ScrollView>
       </View>
     );
-  }
+  };
 }
 
 const styles = StyleSheet.create({

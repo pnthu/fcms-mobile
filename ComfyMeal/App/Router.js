@@ -16,10 +16,6 @@ const HomeStack = createStackNavigator(
       screen: StallListScreen,
       navigationOptions: {headerShown: false},
     },
-    StallDetail: {
-      screen: StallDetailScreen,
-      navigationOptions: {headerShown: false},
-    },
   },
   {initialRouteName: 'StallList'},
 );
@@ -116,6 +112,10 @@ const RootStack = createStackNavigator(
     },
     CustomerHome: {
       screen: CustomerTabNavigator,
+      navigationOptions: {headerShown: false},
+    },
+    StallDetail: {
+      screen: StallDetailScreen,
       navigationOptions: {headerShown: false},
     },
   },
