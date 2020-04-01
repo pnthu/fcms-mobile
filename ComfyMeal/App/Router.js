@@ -9,6 +9,7 @@ import StallDetailScreen from './screens/stalls/StallDetailScreen';
 import AboutScreen from './screens/about/AboutScreen';
 import OrderScreen from './screens/orders/OrderScreen';
 import CartScreen from './screens/orders/CartScreen';
+import ProfileScreen from './screens/user/ProfileScreen';
 
 const HomeStack = createStackNavigator(
   {
@@ -35,19 +36,11 @@ const CartStack = createStackNavigator(
   {initialRouteName: 'CartInfo'},
 );
 
-const ProfileStack = createStackNavigator(
-  {
-    Login: {screen: LoginScreen, navigationOptions: {headerShown: false}},
-    // MyProfile: {screen: ProfileScreen, navigationOptions: {headerShown: false}},
-  },
-  {initialRouteName: 'Login'}, //this.state.loggedIn
-);
-
 const UserTabNavigator = createBottomTabNavigator(
   {
     HomeTab: HomeStack,
     AboutTab: {screen: AboutScreen, navigationOptions: {headerShown: false}},
-    ProfileTab: ProfileStack,
+    ProfileTab: {screen: LoginScreen, navigationOptions: {headerShown: false}},
   },
   {
     tabBarOptions: {
@@ -77,7 +70,10 @@ const CustomerTabNavigator = createBottomTabNavigator(
     HomeTab: HomeStack,
     OrderTab: OrderStack,
     AboutTab: {screen: AboutScreen, navigationOptions: {headerShown: false}},
-    ProfileTab: ProfileStack,
+    ProfileTab: {
+      screen: ProfileScreen,
+      navigationOptions: {headerShown: false},
+    },
   },
   {
     tabBarOptions: {

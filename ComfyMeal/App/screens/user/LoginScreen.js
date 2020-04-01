@@ -6,8 +6,17 @@ import {
   statusCodes,
 } from '@react-native-community/google-signin';
 import {LoginButton, AccessToken} from 'react-native-fbsdk';
+import AsyncStorage from '@react-native-community/async-storage';
 
 class LoginScreen extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      user: {},
+      tokens: {},
+    };
+  }
+
   componentDidMount = () => {
     GoogleSignin.configure({
       webClientId:
@@ -17,23 +26,20 @@ class LoginScreen extends React.Component {
       androidClientId:
         '618274547090-aejif9us2mkdrmhrg151jc0930im3k1r.apps.googleusercontent.com',
     });
+
+    // fetch('foodcout.ap-southeast-1.elasticbeanstalk.com/user/customer/social-account')
   };
 
   _signIn = async () => {
     try {
       await GoogleSignin.hasPlayServices();
-      await GoogleSignin.signIn().then(data => {
-        console.log('TEST ' + JSON.stringify(data));
+      const user = await GoogleSignin.signIn();
+      const tokens = GoogleSignin.getTokens();
+      this.setState({user: user, tokens: tokens});
+      //call api here
 
-        const currentUser = GoogleSignin.getTokens().then(res => {
-          console.log('accessToken', res.accessToken); //<-------Get accessToken
-          var postData = {
-            access_token: res.accessToken,
-            code: data.idToken,
-          };
-        });
-      });
-      // console.log(this.getTokens());
+      await AsyncStorage.setItem('user-info', JSON.stringify(user.user));
+
       this.props.navigation.navigate('CustomerHome');
     } catch (error) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
@@ -72,7 +78,7 @@ class LoginScreen extends React.Component {
         <TouchableOpacity>
           <LoginButton
             style={{
-              height: 40,
+              height: 30,
               width: '70%',
               alignSelf: 'center',
             }}
@@ -93,7 +99,6 @@ class LoginScreen extends React.Component {
                 });
               }
             }}
-            onLogoutFinished={() => console.log('logout.')}
           />
         </TouchableOpacity>
       </View>
