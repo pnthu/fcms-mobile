@@ -1,11 +1,13 @@
 import * as React from 'react';
 import {StyleSheet, View, Text, TouchableOpacity, Image} from 'react-native';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import {GoogleSignin, statusCodes} from '@react-native-community/google-signin';
 import {
-  GoogleSignin,
-  GoogleSigninButton,
-  statusCodes,
-} from '@react-native-community/google-signin';
-import {LoginButton, AccessToken} from 'react-native-fbsdk';
+  AccessToken,
+  GraphRequest,
+  GraphRequestManager,
+  LoginManager,
+} from 'react-native-fbsdk';
 import AsyncStorage from '@react-native-community/async-storage';
 
 class LoginScreen extends React.Component {
@@ -26,20 +28,19 @@ class LoginScreen extends React.Component {
       androidClientId:
         '618274547090-aejif9us2mkdrmhrg151jc0930im3k1r.apps.googleusercontent.com',
     });
-
-    // fetch('foodcout.ap-southeast-1.elasticbeanstalk.com/user/customer/social-account')
   };
 
-  _signIn = async () => {
+  signInGoogle = async () => {
     try {
       await GoogleSignin.hasPlayServices();
       const user = await GoogleSignin.signIn();
-      const tokens = GoogleSignin.getTokens();
+      const tokens = await GoogleSignin.getTokens();
+      console.log('tokens', tokens);
       this.setState({user: user, tokens: tokens});
+      const provider = {provider: 'Google'};
       //call api here
-
       await AsyncStorage.setItem('user-info', JSON.stringify(user.user));
-
+      await AsyncStorage.setItem('provider', JSON.stringify(provider));
       this.props.navigation.navigate('CustomerHome');
     } catch (error) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
@@ -54,6 +55,40 @@ class LoginScreen extends React.Component {
     }
   };
 
+  signInFacebook = async () => {
+    const result = await LoginManager.logInWithPermissions([
+      'public_profile',
+      'email',
+    ]);
+    if (result.isCancelled) {
+      console.log('login is cancelled.');
+    } else if (result.error) {
+      console.log('login has error: ' + error);
+    } else {
+      const data = await AccessToken.getCurrentAccessToken();
+      const {accessToken} = data;
+      console.log('accessToken', accessToken);
+      //call api here
+      const infoRequest = new GraphRequest(
+        '/me?fields=id,name,email,picture',
+        null,
+        async (error, result) => {
+          if (error) {
+            console.log('error', error);
+          } else {
+            const {picture} = result;
+            const mappedInfo = {photo: picture.data.url, ...result};
+            await AsyncStorage.setItem('user-info', JSON.stringify(mappedInfo));
+          }
+        },
+      );
+      new GraphRequestManager().addRequest(infoRequest).start();
+      const provider = {provider: 'facebook'};
+      await AsyncStorage.setItem('provider', JSON.stringify(provider));
+      this.props.navigation.navigate('CustomerHome');
+    }
+  };
+
   render() {
     return (
       <View style={styles.container}>
@@ -65,41 +100,14 @@ class LoginScreen extends React.Component {
           Welcome to Comfy Meal! {'\n\n'}To experience our further features,
           please:
         </Text>
-        <TouchableOpacity>
-          <GoogleSigninButton
-            style={{width: '70%', height: 40, alignSelf: 'center'}}
-            size={GoogleSigninButton.Size.Wide}
-            color={GoogleSigninButton.Color.Dark}
-            onPress={this._signIn}
-            // disabled={this.state.isSigninInProgress}
-          />
+        <TouchableOpacity onPress={this.signInGoogle} style={styles.ggBtn}>
+          <FontAwesome name="google" style={styles.icon} />
+          <Text style={styles.btnText}>Login with Google</Text>
         </TouchableOpacity>
         <Text style={styles.introText}>or</Text>
-        <TouchableOpacity>
-          <LoginButton
-            style={{
-              height: 30,
-              width: '70%',
-              alignSelf: 'center',
-            }}
-            publishPermissions={['publish_actions']}
-            permissions={['email', 'public_profile']}
-            onLoginFinished={(error, result) => {
-              if (error) {
-                console.log('login has error: ' + error);
-              } else if (result.isCancelled) {
-                console.log('login is cancelled.');
-              } else {
-                AccessToken.getCurrentAccessToken().then(data => {
-                  console.log(data.accessToken);
-
-                  // console.log(data.userID);
-                  console.log(data.permissions);
-                  this.props.navigation.navigate('CustomerHome');
-                });
-              }
-            }}
-          />
+        <TouchableOpacity style={styles.fbBtn} onPress={this.signInFacebook}>
+          <FontAwesome name="facebook" style={styles.icon} />
+          <Text style={styles.btnText}>Login with Facebook</Text>
         </TouchableOpacity>
       </View>
     );
@@ -123,6 +131,37 @@ const styles = StyleSheet.create({
     fontSize: 18,
     textAlign: 'center',
     marginVertical: 16,
+  },
+  ggBtn: {
+    alignSelf: 'center',
+    backgroundColor: '#c94536',
+    width: '70%',
+    height: 40,
+    flexDirection: 'row',
+    borderRadius: 20,
+  },
+  fbBtn: {
+    alignSelf: 'center',
+    backgroundColor: '#3f619b',
+    width: '70%',
+    height: 40,
+    flexDirection: 'row',
+    borderRadius: 20,
+  },
+  icon: {
+    color: 'white',
+    borderRightColor: 'white',
+    borderRightWidth: 1,
+    fontSize: 18,
+    width: 40,
+    textAlign: 'center',
+    textAlignVertical: 'center',
+  },
+  btnText: {
+    color: 'white',
+    fontWeight: 'bold',
+    marginLeft: 40,
+    textAlignVertical: 'center',
   },
 });
 
