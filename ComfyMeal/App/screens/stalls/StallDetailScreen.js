@@ -120,9 +120,23 @@ class StallDetailScreen extends React.Component {
           style={styles.stallImage}
         />
         <View style={styles.container}>
-          <Text style={styles.name}>
-            {this.state.foodStallDetail.foodStallName}
-          </Text>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+            }}>
+            <FontAwesome5
+              name="chevron-left"
+              color="black"
+              size={22}
+              onPress={() => {
+                this.props.navigation.goBack();
+              }}
+            />
+            <Text style={styles.name}>
+              {this.state.foodStallDetail.foodStallName}
+            </Text>
+          </View>
           <View
             style={{
               flexDirection: 'row',
@@ -207,7 +221,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   stallImage: {width: '100%', height: 300},
-  name: {fontSize: 25, textAlign: 'center', fontWeight: 'bold'},
+  name: {
+    fontSize: 25,
+    textAlign: 'center',
+    fontWeight: 'bold',
+    marginLeft: '17%',
+  },
   stars: {
     justifyContent: 'flex-start',
     marginTop: 2,

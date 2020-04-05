@@ -83,7 +83,7 @@ const CustomerTabNavigator = createBottomTabNavigator(
         routeName === 'HomeTab'
           ? (iconName = 'home')
           : routeName === 'OrderTab'
-          ? (iconName = 'clipboard-list')
+          ? (iconName = 'history')
           : routeName === 'AboutTab'
           ? (iconName = 'info-circle')
           : (iconName = 'user-circle');
