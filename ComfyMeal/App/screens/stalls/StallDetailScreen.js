@@ -7,9 +7,11 @@ import {
   Image,
   FlatList,
   TouchableOpacity,
+  ToastAndroid,
 } from 'react-native';
 import StarRating from 'react-native-star-rating';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import AsyncStorage from '@react-native-community/async-storage';
 
 class StallDetailScreen extends React.Component {
   constructor(props) {
@@ -22,10 +24,11 @@ class StallDetailScreen extends React.Component {
         foodStallDescription: '',
         foodStallrating: 0,
       },
+      cart: null,
     };
   }
 
-  componentDidMount = () => {
+  componentDidMount = async () => {
     this.backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
       this.props.navigation.goBack();
       return true;
@@ -69,12 +72,43 @@ class StallDetailScreen extends React.Component {
       .catch((error) => {
         console.log(error);
       });
+    try {
+      const response = await AsyncStorage.getItem('cart');
+      const cart = JSON.parse(response);
+      cart && this.setState({cart: cart});
+    } catch (error) {
+      console.log('Something was wrong, ', error);
+    }
   };
 
-  addToCart = () => {};
+  addToCart = (food) => {
+    if (this.state.cart === null) {
+      ToastAndroid.show('Please login to order our food.', ToastAndroid.SHORT);
+      this.props.navigation.navigate('ProfileTab', {
+        foodstall: this.props.navigation.state.params.foodstall,
+      });
+    } else {
+      food.foodStallId = 'fs1';
+      if (this.state.cart instanceof Array) {
+        for (let i = 0; i < this.state.cart.length; i++) {
+          if (this.state.cart[i].id === food.id) {
+            this.state.cart[i].quantity++;
+            break;
+          }
+        }
+        food.quantity = 0;
+        this.setState({cart: this.state.cart.push(food)});
+        //setState xong rồi gắn vô AsyncStorage
+      }
+      console.log('cart', this.state.cart);
+    }
+  };
+
+  onNavigateToCart = async () => {
+    this.props.navigation.navigate('CartInfo');
+  };
 
   render() {
-    // const {navigation} = this.props;
     // console.log('Render: ' + foodstall);
     return (
       <>
@@ -86,7 +120,6 @@ class StallDetailScreen extends React.Component {
           style={styles.stallImage}
         />
         <View style={styles.container}>
-          {/* <Text>{JSON.stringify(navigation.state.params)}</Text> */}
           <Text style={styles.name}>
             {this.state.foodStallDetail.foodStallName}
           </Text>
@@ -123,7 +156,7 @@ class StallDetailScreen extends React.Component {
             renderItem={({item, index}) => (
               <TouchableOpacity
                 key={index}
-                onPress={() => this.addToCart}
+                onPress={() => this.addToCart(item)}
                 style={styles.foodCard}>
                 <Image source={{uri: item.foodImage}} style={styles.foodImg} />
                 <View>
@@ -147,13 +180,20 @@ class StallDetailScreen extends React.Component {
             keyExtractor={(item, index) => index.toString()}
           />
         </View>
-        <TouchableOpacity style={styles.btnCart}>
-          <FontAwesome5
-            name="shopping-cart"
-            color="white"
-            style={{fontSize: 20}}
-          />
-        </TouchableOpacity>
+        {(this.state.cart && this.state.cart.length === 0) || (
+          <>
+            <TouchableOpacity
+              style={styles.btnCart}
+              onPress={this.onNavigateToCart}>
+              <FontAwesome5
+                name="shopping-cart"
+                color="white"
+                style={{fontSize: 20}}
+              />
+            </TouchableOpacity>
+            <Text style={styles.quantity}>1</Text>
+          </>
+        )}
       </>
     );
   }
@@ -211,6 +251,21 @@ const styles = StyleSheet.create({
     left: 12,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  quantity: {
+    position: 'absolute',
+    bottom: 40,
+    left: 48,
+    borderWidth: 3,
+    borderColor: 'white',
+    borderRadius: 12,
+    backgroundColor: '#ee7739',
+    color: 'white',
+    width: 24,
+    height: 24,
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    fontWeight: 'bold',
   },
 });
 

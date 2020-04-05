@@ -3,6 +3,7 @@ import {createAppContainer} from 'react-navigation';
 import {createStackNavigator} from 'react-navigation-stack';
 import {createBottomTabNavigator} from 'react-navigation-tabs';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import AsyncStorage from '@react-native-community/async-storage';
 import LoginScreen from './screens/user/LoginScreen';
 import StallListScreen from './screens/stalls/StallListScreen';
 import StallDetailScreen from './screens/stalls/StallDetailScreen';
@@ -10,6 +11,8 @@ import AboutScreen from './screens/about/AboutScreen';
 import OrderScreen from './screens/orders/OrderScreen';
 import CartScreen from './screens/orders/CartScreen';
 import ProfileScreen from './screens/user/ProfileScreen';
+
+// const info = await AsyncStorage.getItem('user-info');
 
 const HomeStack = createStackNavigator(
   {
@@ -26,14 +29,6 @@ const OrderStack = createStackNavigator(
     OrderList: {screen: OrderScreen, navigationOptions: {headerShown: false}},
   },
   {initialRouteName: 'OrderList'},
-);
-
-const CartStack = createStackNavigator(
-  {
-    CartInfo: {screen: CartScreen, navigationOptions: {headerShown: false}},
-    // Checkout: {screen: CheckoutScreen, navigationOptions: {headerShown: false}},
-  },
-  {initialRouteName: 'CartInfo'},
 );
 
 const UserTabNavigator = createBottomTabNavigator(
@@ -114,6 +109,7 @@ const RootStack = createStackNavigator(
       screen: StallDetailScreen,
       navigationOptions: {headerShown: false},
     },
+    CartInfo: {screen: CartScreen, navigationOptions: {headerShown: false}},
   },
   {initialRouteName: 'UserHome'},
 );

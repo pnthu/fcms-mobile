@@ -30,12 +30,13 @@ class ProfileScreen extends React.Component {
         await GoogleSignin.signOut();
         await AsyncStorage.removeItem('user-info');
         await AsyncStorage.removeItem('provider');
+        await AsyncStorage.removeItem('cart');
         this.props.navigation.navigate('UserHome');
       } else {
-        console.log('bear bear');
         LoginManager.logOut();
         await AsyncStorage.removeItem('user-info');
         await AsyncStorage.removeItem('provider');
+        await AsyncStorage.removeItem('cart');
         this.props.navigation.navigate('UserHome');
       }
     } catch (error) {

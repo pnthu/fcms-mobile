@@ -1,5 +1,12 @@
 import * as React from 'react';
-import {StyleSheet, View, Text, TouchableOpacity, Image} from 'react-native';
+import {
+  StyleSheet,
+  BackHandler,
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+} from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {GoogleSignin, statusCodes} from '@react-native-community/google-signin';
 import {
@@ -24,10 +31,14 @@ class LoginScreen extends React.Component {
     GoogleSignin.configure({
       webClientId:
         '618274547090-det3na3qsjhkamt2u82omfbgjesonea7.apps.googleusercontent.com',
-      offlineAccess: true,
+      offlineAccess: false,
       forceConsentPrompt: true,
       androidClientId:
         '618274547090-aejif9us2mkdrmhrg151jc0930im3k1r.apps.googleusercontent.com',
+    });
+    this.backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      this.props.navigation.goBack();
+      return true;
     });
   };
 
@@ -37,7 +48,6 @@ class LoginScreen extends React.Component {
       const user = await GoogleSignin.signIn();
       const tokens = await GoogleSignin.getTokens();
       console.log('tokens', tokens);
-      this.setState({user: user, tokens: tokens});
       const provider = {provider: 'Google'};
       console.log('GOOGLE: ' + tokens.accessToken);
       //call api here
@@ -67,6 +77,8 @@ class LoginScreen extends React.Component {
         });
       await AsyncStorage.setItem('user-info', JSON.stringify(user.user));
       await AsyncStorage.setItem('provider', JSON.stringify(provider));
+      const cart = [];
+      await AsyncStorage.setItem('cart', JSON.stringify(cart));
       this.props.navigation.navigate('CustomerHome');
       await AsyncStorage.setItem(
         'customer-wallet',
@@ -142,6 +154,8 @@ class LoginScreen extends React.Component {
         'customer-wallet',
         JSON.stringify(this.state.wallet),
       );
+      const cart = [];
+      await AsyncStorage.setItem('cart', JSON.stringify(cart));
       this.props.navigation.navigate('CustomerHome');
     }
   };

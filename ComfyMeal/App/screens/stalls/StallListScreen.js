@@ -14,41 +14,6 @@ import Carousel from 'react-native-snap-carousel';
 import StarRating from 'react-native-star-rating';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
-const renderCarousel = ({item, index}) => {
-  // const {navigation} = this.props;
-
-  return (
-    <TouchableOpacity
-      key={index}
-      style={styles.fsCarousel}
-      // onPress={() => {
-      //   navigation.navigate('StallDetail', {
-      //     navigation: navigation,
-      //     foodstall: item,
-      //   });
-      // }}>
-    >
-      <Image source={{uri: item.foodImage}} style={styles.fsImage} />
-      <Text ellipsizeMode="tail" numberOfLines={1} style={styles.fsTitle}>
-        {item.foodName}
-      </Text>
-      <Text ellipsizeMode="tail" numberOfLines={2}>
-        {item.foodDescription}
-      </Text>
-      <StarRating
-        disabled
-        halfStarEnabled
-        starSize={15}
-        fullStarColor="#ffdd00"
-        halfStarColor="#ffdd00"
-        emptyStarColor="#ffdd00"
-        rating={item.foodRating}
-        containerStyle={styles.stars}
-      />
-    </TouchableOpacity>
-  );
-};
-
 class StallListScreen extends React.Component {
   constructor(props) {
     super(props);
@@ -116,6 +81,37 @@ class StallListScreen extends React.Component {
       });
   }
 
+  renderCarousel = ({item, index}) => {
+    return (
+      <TouchableOpacity
+        key={index}
+        style={styles.fsCarousel}
+        onPress={() => {
+          this.props.navigation.navigate('StallDetail', {
+            foodstall: item,
+          });
+        }}>
+        <Image source={item.image} style={styles.fsImage} />
+        <Text ellipsizeMode="tail" numberOfLines={1} style={styles.fsTitle}>
+          {item.name}
+        </Text>
+        <Text ellipsizeMode="tail" numberOfLines={2}>
+          {item.description}
+        </Text>
+        <StarRating
+          disabled
+          halfStarEnabled
+          starSize={15}
+          fullStarColor="#ffdd00"
+          halfStarColor="#ffdd00"
+          emptyStarColor="#ffdd00"
+          rating={item.rating}
+          containerStyle={styles.stars}
+        />
+      </TouchableOpacity>
+    );
+  };
+
   render = () => {
     const {navigation} = this.props;
 
@@ -141,7 +137,7 @@ class StallListScreen extends React.Component {
             <Text style={styles.topRating}>Top Rating Food</Text>
             <Carousel
               data={this.state.topFoodList}
-              renderItem={renderCarousel}
+              renderItem={this.renderCarousel}
               itemWidth={Dimensions.get('window').width / 2}
               sliderWidth={Dimensions.get('window').width}
               firstItem={1}
@@ -176,7 +172,6 @@ class StallListScreen extends React.Component {
                 style={styles.fsCard}
                 onPress={() => {
                   navigation.navigate('StallDetail', {
-                    // navigation: navigation,
                     foodstall: item.foodStallId,
                   });
                 }}>
