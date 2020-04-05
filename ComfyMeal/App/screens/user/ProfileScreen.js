@@ -17,6 +17,7 @@ class ProfileScreen extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      customerWallet: {walletId: 0, walletBalance: 0},
       userInfo: {},
       provider: {},
     };
@@ -47,8 +48,15 @@ class ProfileScreen extends React.Component {
       const response = await AsyncStorage.getItem('user-info');
       const userInfo = JSON.parse(response);
       const provider = JSON.parse(await AsyncStorage.getItem('provider'));
-      console.log('provider', provider);
-      this.setState({userInfo: userInfo, provider: provider});
+      const wallet = JSON.parse(await AsyncStorage.getItem('customer-wallet'));
+      this.setState({
+        userInfo: userInfo,
+        provider: provider,
+        customerWallet: {
+          walletId: wallet.walletId,
+          walletBalance: wallet.walletBalance,
+        },
+      });
       console.log('user', userInfo);
     } catch (error) {
       this.props.navigation.navigate('UserHome');
@@ -57,7 +65,6 @@ class ProfileScreen extends React.Component {
   };
 
   render() {
-    console.log('bear', this.state.userInfo.photo);
     return (
       <View style={styles.container}>
         <View style={styles.section}>
@@ -75,7 +82,9 @@ class ProfileScreen extends React.Component {
           </View>
           <View style={styles.row}>
             <FontAwesome5 name="wallet" color="white" style={styles.icon} />
-            <Text>Your wallet balance: </Text>
+            <Text>
+              Your wallet balance: {this.state.customerWallet.walletBalance}
+            </Text>
           </View>
           <TouchableOpacity style={styles.row} onPress={this.logout}>
             <FontAwesome5

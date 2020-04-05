@@ -14,88 +14,6 @@ import Carousel from 'react-native-snap-carousel';
 import StarRating from 'react-native-star-rating';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
-const categories = [
-  {name: 'FastFood'},
-  {name: 'Drink'},
-  {name: 'Grill & Hot Pot'},
-  {name: 'Rice'},
-  {name: 'Sushi'},
-  {name: 'Dimsum'},
-  {name: 'Salad'},
-];
-
-const foodstalls = [
-  {
-    name: 'Gong Cha Milk Tea',
-    description:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque placerat elit maximus.',
-    rating: 4,
-    image: require('../../../assets/gongcha.jpeg'),
-    type: categories[1],
-  },
-  {
-    name: 'KFC Vietnam',
-    description:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque placerat elit maximus.',
-    rating: 3,
-    image: require('../../../assets/kfc.png'),
-    type: categories[0],
-  },
-  {
-    name: 'Sumo BBQ',
-    description:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque placerat elit maximus.',
-    rating: 5,
-    image: require('../../../assets/sumo.jpg'),
-    type: categories[2],
-  },
-  {
-    name: 'Cali Broken Rice',
-    description:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque placerat elit maximus.',
-    rating: 4.5,
-    image: require('../../../assets/cali.jpg'),
-    type: categories[3],
-  },
-  {
-    name: 'Baoz Dimsum',
-    description:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque placerat elit maximus.',
-    rating: 3,
-    image: require('../../../assets/baoz-dimsum.jpg'),
-    type: categories[5],
-  },
-  {
-    name: 'Poke Saigon',
-    description:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque placerat elit maximus.',
-    rating: 5,
-    image: require('../../../assets/salad.jpg'),
-    type: categories[6],
-  },
-  {
-    name: 'Uchi Sushi',
-    description:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque placerat elit maximus.',
-    rating: 4,
-    image: require('../../../assets/sushi.jpg'),
-    type: categories[4],
-  },
-  {
-    name: 'Hutong Hot Pot',
-    description:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque placerat elit maximus.',
-    rating: 4.5,
-    image: require('../../../assets/hotpot.jpg'),
-    type: categories[2],
-  },
-];
-
-const filteredFs = foodstalls
-  .slice()
-  .sort((a, b) => b.rating - a.rating)
-  .slice(0, 5);
-
 const renderCarousel = ({item, index}) => {
   // const {navigation} = this.props;
 
@@ -110,12 +28,12 @@ const renderCarousel = ({item, index}) => {
       //   });
       // }}>
     >
-      <Image source={item.image} style={styles.fsImage} />
+      <Image source={{uri: item.foodImage}} style={styles.fsImage} />
       <Text ellipsizeMode="tail" numberOfLines={1} style={styles.fsTitle}>
-        {item.name}
+        {item.foodName}
       </Text>
       <Text ellipsizeMode="tail" numberOfLines={2}>
-        {item.description}
+        {item.foodDescription}
       </Text>
       <StarRating
         disabled
@@ -124,7 +42,7 @@ const renderCarousel = ({item, index}) => {
         fullStarColor="#ffdd00"
         halfStarColor="#ffdd00"
         emptyStarColor="#ffdd00"
-        rating={item.rating}
+        rating={item.foodRating}
         containerStyle={styles.stars}
       />
     </TouchableOpacity>
@@ -132,6 +50,72 @@ const renderCarousel = ({item, index}) => {
 };
 
 class StallListScreen extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      listCategories: [],
+      listFoodStall: [],
+      topFoodList: [],
+      foodStallName: '',
+    };
+  }
+
+  componentDidMount() {
+    fetch(
+      'http://foodcout.ap-southeast-1.elasticbeanstalk.com/food-court/type/lists',
+      {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      },
+    )
+      .then((Response) => Response.json())
+      .then((typeList) => {
+        this.setState({listCategories: typeList});
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+
+    fetch(
+      'http://foodcout.ap-southeast-1.elasticbeanstalk.com/food-stall/lists',
+      {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      },
+    )
+      .then((Response) => Response.json())
+      .then((foodStallList) => {
+        this.setState({listFoodStall: foodStallList});
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+
+    fetch(
+      'http://foodcout.ap-southeast-1.elasticbeanstalk.com/food/filter/top-food/lists',
+      {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      },
+    )
+      .then((Response) => Response.json())
+      .then((foodList) => {
+        this.setState({topFoodList: foodList});
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+
   render = () => {
     const {navigation} = this.props;
 
@@ -154,9 +138,9 @@ class StallListScreen extends React.Component {
         </View>
         <ScrollView showsVerticalScrollIndicator={false}>
           <View>
-            <Text style={styles.topRating}>Top Rating Food Stalls</Text>
+            <Text style={styles.topRating}>Top Rating Food</Text>
             <Carousel
-              data={filteredFs}
+              data={this.state.topFoodList}
               renderItem={renderCarousel}
               itemWidth={Dimensions.get('window').width / 2}
               sliderWidth={Dimensions.get('window').width}
@@ -168,17 +152,22 @@ class StallListScreen extends React.Component {
             style={styles.tagsContainer}
             showsHorizontalScrollIndicator={false}
             horizontal>
-            {categories.map((category, index) => {
+            {this.state.listCategories.map((cate, index) => {
               return (
-                <TouchableOpacity key={index} style={styles.tag}>
-                  <Text style={{color: 'white'}}>{category.name}</Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    fetch('');
+                  }}
+                  key={index}
+                  style={styles.tag}>
+                  <Text style={{color: 'white'}}>{cate.typeName}</Text>
                 </TouchableOpacity>
               );
             })}
           </ScrollView>
           <FlatList
             scrollEnabled={false}
-            data={foodstalls}
+            data={this.state.listFoodStall}
             showsVerticalScrollIndicator={false}
             numColumns={2}
             renderItem={({item, index}) => (
@@ -187,19 +176,22 @@ class StallListScreen extends React.Component {
                 style={styles.fsCard}
                 onPress={() => {
                   navigation.navigate('StallDetail', {
-                    navigation: navigation,
-                    foodstall: item,
+                    // navigation: navigation,
+                    foodstall: item.foodStallId,
                   });
                 }}>
-                <Image source={item.image} style={styles.fsImage} />
+                <Image
+                  source={{uri: item.foodStallImage}}
+                  style={styles.fsImage}
+                />
                 <Text
                   ellipsizeMode="tail"
                   numberOfLines={1}
                   style={styles.fsTitle}>
-                  {item.name}
+                  {item.foodStallName}
                 </Text>
                 <Text ellipsizeMode="tail" numberOfLines={2}>
-                  {item.description}
+                  {item.foodStallDescription}
                 </Text>
                 <StarRating
                   disabled
@@ -209,7 +201,7 @@ class StallListScreen extends React.Component {
                   halfStarColor="#ffdd00"
                   emptyStarColor="#ffdd00"
                   containerStyle={styles.stars}
-                  rating={item.rating}
+                  rating={item.foodStallRating / 2}
                 />
               </TouchableOpacity>
             )}

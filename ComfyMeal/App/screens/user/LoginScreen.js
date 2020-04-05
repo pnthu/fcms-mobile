@@ -16,6 +16,7 @@ class LoginScreen extends React.Component {
     this.state = {
       user: {},
       tokens: {},
+      wallet: {walletId: 0, walletBalance: 0},
     };
   }
 
@@ -38,10 +39,39 @@ class LoginScreen extends React.Component {
       console.log('tokens', tokens);
       this.setState({user: user, tokens: tokens});
       const provider = {provider: 'Google'};
+      console.log('GOOGLE: ' + tokens.accessToken);
       //call api here
+      fetch(
+        'http://foodcout.ap-southeast-1.elasticbeanstalk.com/user/customer/social-account?accessToken=' +
+          tokens.accessToken +
+          '&provider=Google',
+        {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+        },
+      )
+        .then((Response) => Response.json())
+        .then((wallet) => {
+          this.setState({
+            wallet: {
+              walletId: wallet.id,
+              walletBalance: wallet.balances,
+            },
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
       await AsyncStorage.setItem('user-info', JSON.stringify(user.user));
       await AsyncStorage.setItem('provider', JSON.stringify(provider));
       this.props.navigation.navigate('CustomerHome');
+      await AsyncStorage.setItem(
+        'customer-wallet',
+        JSON.stringify(this.state.wallet),
+      );
     } catch (error) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         console.log('User has cancelled');
@@ -68,7 +98,30 @@ class LoginScreen extends React.Component {
       const data = await AccessToken.getCurrentAccessToken();
       const {accessToken} = data;
       console.log('accessToken', accessToken);
-      //call api here
+      fetch(
+        'http://192.168.1.102:8080/user/customer/social-account?accessToken=' +
+          accessToken +
+          '&provider=Facebook',
+        {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+        },
+      )
+        .then((Response) => Response.json())
+        .then((wallet) => {
+          this.setState({
+            wallet: {
+              walletId: wallet.id,
+              walletBalance: wallet.balances,
+            },
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
       const infoRequest = new GraphRequest(
         '/me?fields=id,name,email,picture',
         null,
@@ -85,6 +138,10 @@ class LoginScreen extends React.Component {
       new GraphRequestManager().addRequest(infoRequest).start();
       const provider = {provider: 'facebook'};
       await AsyncStorage.setItem('provider', JSON.stringify(provider));
+      await AsyncStorage.setItem(
+        'customer-wallet',
+        JSON.stringify(this.state.wallet),
+      );
       this.props.navigation.navigate('CustomerHome');
     }
   };

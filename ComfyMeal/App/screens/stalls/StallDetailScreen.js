@@ -11,114 +11,84 @@ import {
 import StarRating from 'react-native-star-rating';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
-const categories = [
-  {name: 'FastFood'},
-  {name: 'Drink'},
-  {name: 'Grill & Hot Pot'},
-  {name: 'Rice'},
-  {name: 'Sushi'},
-  {name: 'Dimsum'},
-  {name: 'Salad'},
-];
-
-const foods = [
-  {
-    name: 'Fried Potato',
-    price: 20000,
-    description:
-      'Fresh potato from New Zealand, fried with non-reused oil, gives you the best food quality.',
-    type: categories[0],
-    image: require('../../../assets/kfc.png'),
-    rating: 4.8,
-  },
-  {
-    name: 'Fried Potato',
-    price: 20000,
-    description:
-      'Fresh potato from New Zealand, fried with non-reused oil, gives you the best food quality.',
-    type: categories[0],
-    image: require('../../../assets/kfc.png'),
-    rating: 4.8,
-  },
-  {
-    name: 'Fried Potato',
-    price: 20000,
-    description:
-      'Fresh potato from New Zealand, fried with non-reused oil, gives you the best food quality.',
-    type: categories[0],
-    image: require('../../../assets/kfc.png'),
-    rating: 4.8,
-  },
-  {
-    name: 'Fried Potato',
-    price: 20000,
-    description:
-      'Fresh potato from New Zealand, fried with non-reused oil, gives you the best food quality.',
-    type: categories[0],
-    image: require('../../../assets/kfc.png'),
-    rating: 4.8,
-  },
-  {
-    name: 'Fried Potato',
-    price: 20000,
-    description:
-      'Fresh potato from New Zealand, fried with non-reused oil, gives you the best food quality.',
-    type: categories[0],
-    image: require('../../../assets/kfc.png'),
-    rating: 4.8,
-  },
-  {
-    name: 'Fried Potato',
-    price: 20000,
-    description:
-      'Fresh potato from New Zealand, fried with non-reused oil, gives you the best food quality.',
-    type: categories[0],
-    image: require('../../../assets/kfc.png'),
-    rating: 4.8,
-  },
-  {
-    name: 'Fried Potato',
-    price: 20000,
-    description:
-      'Fresh potato from New Zealand, fried with non-reused oil, gives you the best food quality.',
-    type: categories[0],
-    image: require('../../../assets/kfc.png'),
-    rating: 4.8,
-  },
-  {
-    name: 'Fried Potato',
-    price: 20000,
-    description:
-      'Fresh potato from New Zealand, fried with non-reused oil, gives you the best food quality.',
-    type: categories[0],
-    image: require('../../../assets/kfc.png'),
-    rating: 4.8,
-  },
-];
-
 class StallDetailScreen extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      foodStallMenu: [],
+      foodStallDetail: {
+        foodStallImage: '',
+        foodStallName: '',
+        foodStallDescription: '',
+        foodStallrating: 0,
+      },
+    };
+  }
+
   componentDidMount = () => {
     this.backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
       this.props.navigation.goBack();
       return true;
     });
+    fetch(
+      'http://foodcout.ap-southeast-1.elasticbeanstalk.com/food-stall/' +
+        JSON.stringify(this.props.navigation.state.params.foodstall) +
+        '/detail',
+      {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      },
+    )
+      .then((Response) => Response.json())
+      .then((detail) => {
+        this.setState({foodStallDetail: detail});
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+
+    fetch(
+      'http://foodcout.ap-southeast-1.elasticbeanstalk.com/food-stall/' +
+        JSON.stringify(this.props.navigation.state.params.foodstall) +
+        '/detail/menu',
+      {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      },
+    )
+      .then((Response) => Response.json())
+      .then((menu) => {
+        this.setState({foodStallMenu: menu});
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   addToCart = () => {};
 
   render() {
-    const {navigation} = this.props;
-    console.log('foodstall', navigation.state.params.foodstall);
+    // const {navigation} = this.props;
+    // console.log('Render: ' + foodstall);
     return (
       <>
         <Image
-          source={navigation.state.params.foodstall.image}
+          source={{
+            uri: this.state.foodStallDetail.foodStallImage,
+          }}
+          resizeMethod="resize"
           style={styles.stallImage}
         />
         <View style={styles.container}>
           {/* <Text>{JSON.stringify(navigation.state.params)}</Text> */}
           <Text style={styles.name}>
-            {navigation.state.params.foodstall.name}
+            {this.state.foodStallDetail.foodStallName}
           </Text>
           <View
             style={{
@@ -127,9 +97,7 @@ class StallDetailScreen extends React.Component {
               justifyContent: 'space-between',
               alignItems: 'center',
             }}>
-            <Text style={styles.type}>
-              {navigation.state.params.foodstall.type.name}
-            </Text>
+            <Text style={styles.type}></Text>
             <View style={{flexDirection: 'row'}}>
               <StarRating
                 disabled
@@ -138,18 +106,18 @@ class StallDetailScreen extends React.Component {
                 fullStarColor="#ffdd00"
                 halfStarColor="#ffdd00"
                 emptyStarColor="#ffdd00"
-                rating={navigation.state.params.foodstall.rating}
+                rating={this.state.foodStallDetail.foodStallRating / 2}
                 containerStyle={styles.stars}
               />
-              <Text>{navigation.state.params.foodstall.rating}</Text>
+              <Text>{this.state.foodStallDetail.foodStallRating / 2}</Text>
             </View>
           </View>
           <Text
             style={{fontStyle: 'italic', color: '#808080', paddingVertical: 8}}>
-            {navigation.state.params.foodstall.description}
+            {this.state.foodStallDetail.foodStallDescription}
           </Text>
           <FlatList
-            data={foods}
+            data={this.state.foodStallMenu}
             showsVerticalScrollIndicator={false}
             numColumns={1}
             renderItem={({item, index}) => (
@@ -157,11 +125,11 @@ class StallDetailScreen extends React.Component {
                 key={index}
                 onPress={() => this.addToCart}
                 style={styles.foodCard}>
-                <Image source={item.image} style={styles.foodImg} />
+                <Image source={{uri: item.foodImage}} style={styles.foodImg} />
                 <View>
                   <Text
                     style={{fontSize: 20, fontWeight: 'bold', marginBottom: 4}}>
-                    {item.name}
+                    {item.foodName}
                   </Text>
                   <Text
                     style={{
@@ -169,9 +137,9 @@ class StallDetailScreen extends React.Component {
                       fontWeight: '200',
                       marginBottom: 4,
                     }}>
-                    {item.description}
+                    {item.foodDescription}
                   </Text>
-                  <Text>{item.price}đ</Text>
+                  <Text>{item.originPrice}đ</Text>
                 </View>
                 <FontAwesome5 name="plus-circle" style={styles.btnAdd} />
               </TouchableOpacity>
@@ -198,7 +166,7 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingHorizontal: 20,
   },
-  stallImage: {width: '100%', height: 150},
+  stallImage: {width: '100%', height: 300},
   name: {fontSize: 25, textAlign: 'center', fontWeight: 'bold'},
   stars: {
     justifyContent: 'flex-start',
