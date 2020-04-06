@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {StyleSheet, View, Text, FlatList, TouchableOpacity} from 'react-native';
-import {Tabs, Tab} from 'native-base';
+import {Tabs, Tab, Accordion} from 'native-base';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
@@ -13,6 +13,120 @@ const data = [
 ];
 
 class OrderScreen extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      shoppingCart: [],
+      historyOrder: [],
+      historyOrderDetail: [],
+      walletId: '',
+    };
+  }
+
+  componentDidMount = async () => {
+    // const currentShoppingCart = JSON.parse(await AsyncStorage.getItem('cart'));
+    // const customerWallet = JSON.parse(
+    //   await AsyncStorage.getItem('customer-wallet'),
+    // );
+    // console.log(customerWallet + ' This is wallet');
+    // this.setState({walletId: customerWallet.walletId});
+    // console.log(this.state.walletId + 'SADASDASDASDASD');
+
+    fetch(
+      'http://foodcout.ap-southeast-1.elasticbeanstalk.com/cart/history/122',
+      {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      },
+    )
+      .then(Response => Response.json())
+      .then(history => {
+        this.setState({historyOrder: history});
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  };
+
+  _renderContent = () => {
+    console.log('REDNER ITEM');
+    fetch(
+      'http://foodcout.ap-southeast-1.elasticbeanstalk.com/cart/detail/' +
+        item.id,
+      {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      },
+    )
+      .then(Response => Response.json())
+      .then(historyDetail => {
+        this.setState({historyOrderDetail: historyDetail});
+      })
+      .catch(error => {
+        console.log(error);
+      });
+    console.log(this.state.historyOrderDetail);
+    return (
+      <>
+        {this.state.historyOrderDetail instanceof Array &&
+          this.state.historyOrderDetail.map((detail, index) => {
+            return (
+              <>
+                <Text>{detail.purchasedPrice}</Text>
+                <Text>{detail.foodName}</Text>
+                <Text>{detail.quantity}</Text>
+                <Text>{detail.foodStallName}</Text>
+                <Text>{detail.foodName}</Text>
+              </>
+            );
+          })}
+      </>
+    );
+  };
+
+  _renderHeader = (item, expanded) => {
+    console.log('REDNER HEADER');
+    console.log(item);
+    return (
+      <TouchableOpacity
+        style={styles.card}
+        // onPress={() => {
+        //   fetch(
+        //     'http://foodcout.ap-southeast-1.elasticbeanstalk.com/cart/detail/' +
+        //       item.id,
+        //     {
+        //       method: 'GET',
+        //       headers: {
+        //         Accept: 'application/json',
+        //         'Content-Type': 'application/json',
+        //       },
+        //     },
+        //   )
+        //     .then((Response) => Response.json())
+        //     .then((historyDetail) => {
+        //       this.setState({historyOrderDetail: historyDetail});
+        //     })
+        //     .catch((error) => {
+        //       console.log(error);
+        //     });
+        // }}
+      >
+        <Text>{item.purchaseDate}</Text>
+        {expanded ? (
+          <FontAwesome style={{fontSize: 18}} name="angle-down" />
+        ) : (
+          <FontAwesome style={{fontSize: 18}} name="angle-up" />
+        )}
+      </TouchableOpacity>
+    );
+  };
+
   render() {
     return (
       <View style={styles.container}>
@@ -70,21 +184,49 @@ class OrderScreen extends React.Component {
             tabStyle={{backgroundColor: '#ee7739'}}
             activeTabStyle={{backgroundColor: '#ee7739'}}
             activeTextStyle={{fontWeight: 'bold', color: 'white'}}>
-            <FlatList
+            <Accordion
+              dataArray={this.state.historyOrder}
+              renderHeader={this._renderHeader}
+              renderContent={this._renderContent}
+              expanded={true}
+              animation={true}
+            />
+            {/* <FlatList
               style={styles.tabContainer}
-              data={data}
+              data={this.state.historyOrder}
               showsVerticalScrollIndicator={false}
               numColumns={1}
               keyExtractor={(item, index) => index.toString()}
               renderItem={({item, index}) => {
                 var mappedName = '';
-                for (let i = 0; i < item.fs.length; i++) {
-                  mappedName += item.fs[i] + ', ';
-                }
+                // for (let i = 0; i < item.fs.length; i++) {
+                //   mappedName += item.fs[i] + ', ';
+                // }
 
                 return (
-                  <TouchableOpacity style={styles.card}>
-                    {item.status === 'Cancelled' ? (
+                  <TouchableOpacity
+                    onPress={() => {
+                      fetch(
+                        'http://foodcout.ap-southeast-1.elasticbeanstalk.com/cart/detail/' +
+                          item.id,
+                        {
+                          method: 'GET',
+                          headers: {
+                            Accept: 'application/json',
+                            'Content-Type': 'application/json',
+                          },
+                        },
+                      )
+                        .then((Response) => Response.json())
+                        .then((historyDetail) => {
+                          console.log(historyDetail);
+                        })
+                        .catch((error) => {
+                          console.log(error);
+                        });
+                    }}
+                    style={styles.card}>
+                    {item.cartStatus === 'Cancelled' ? (
                       <FontAwesome
                         name="warning"
                         style={{
@@ -121,9 +263,11 @@ class OrderScreen extends React.Component {
                           marginBottom: 4,
                           fontSize: 16,
                         }}>
-                        {item.status}
+                        {item.cartStatus}
                       </Text>
-                      <Text style={{fontStyle: 'italic'}}>{item.price}đ</Text>
+                      <Text style={{fontStyle: 'italic'}}>
+                        {item.totalPrice}đ
+                      </Text>
                     </View>
                   </TouchableOpacity>
                 );

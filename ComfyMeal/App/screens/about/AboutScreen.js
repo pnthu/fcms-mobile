@@ -22,18 +22,21 @@ class AboutScreen extends React.Component {
   }
 
   componentDidMount() {
-    fetch('http://192.168.1.102:8080/food-court/about', {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
+    fetch(
+      'http://foodcout.ap-southeast-1.elasticbeanstalk.com/food-court/about',
+      {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
       },
-    })
-      .then(Response => Response.json())
-      .then(response => {
+    )
+      .then((Response) => Response.json())
+      .then((response) => {
         this.setState({foodCourtInformation: response});
       })
-      .catch(error => {
+      .catch((error) => {
         console.log(error);
       });
   }

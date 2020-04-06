@@ -18,10 +18,10 @@ class StallListScreen extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      listCategories: [],
+      listCategories: [{typeName: 'All'}],
       listFoodStall: [],
       topFoodList: [],
-      foodStallName: '',
+      searchText: '',
     };
   }
 
@@ -36,11 +36,14 @@ class StallListScreen extends React.Component {
         },
       },
     )
-      .then((Response) => Response.json())
-      .then((typeList) => {
-        this.setState({listCategories: typeList});
+      .then(Response => Response.json())
+      .then(typeList => {
+        typeList.map(type => {
+          let objectType = {typeName: type.typeName};
+          this.state.listCategories.push(objectType);
+        });
       })
-      .catch((error) => {
+      .catch(error => {
         console.log(error);
       });
 
@@ -54,11 +57,11 @@ class StallListScreen extends React.Component {
         },
       },
     )
-      .then((Response) => Response.json())
-      .then((foodStallList) => {
+      .then(Response => Response.json())
+      .then(foodStallList => {
         this.setState({listFoodStall: foodStallList});
       })
-      .catch((error) => {
+      .catch(error => {
         console.log(error);
       });
 
@@ -72,11 +75,11 @@ class StallListScreen extends React.Component {
         },
       },
     )
-      .then((Response) => Response.json())
-      .then((foodList) => {
+      .then(Response => Response.json())
+      .then(foodList => {
         this.setState({topFoodList: foodList});
       })
-      .catch((error) => {
+      .catch(error => {
         console.log(error);
       });
   }
@@ -91,9 +94,9 @@ class StallListScreen extends React.Component {
             foodstall: item,
           });
         }}>
-        <Image source={item.image} style={styles.fsImage} />
+        <Image source={{uri: item.foodImage}} style={styles.fsImage} />
         <Text ellipsizeMode="tail" numberOfLines={1} style={styles.fsTitle}>
-          {item.name}
+          {item.foodName}
         </Text>
         <Text ellipsizeMode="tail" numberOfLines={2}>
           {item.description}
@@ -125,9 +128,33 @@ class StallListScreen extends React.Component {
           }}>
           <TextInput
             style={styles.searchBar}
+            onChange={text => this.setState({searchText: text})}
             placeholder="Search Food stall..."
           />
-          <TouchableOpacity style={styles.searchBtn}>
+          <TouchableOpacity
+            style={styles.searchBtn}
+            onPress={() => {
+              console.log(this.state.searchText);
+              fetch(
+                'http://foodcout.ap-southeast-1.elasticbeanstalk.com/food/search?name=' +
+                  this.state.searchText,
+                {
+                  method: 'GET',
+                  headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                  },
+                },
+              )
+                .then(Response => Response.json())
+                .then(foodStallList => {
+                  console.log(this.state.searchText);
+                  this.setState({listFoodStall: foodStallList});
+                })
+                .catch(error => {
+                  console.log(error);
+                });
+            }}>
             <FontAwesome5 name="search" style={{color: '#ee7739'}} />
             <Text style={{color: '#ee7739', fontWeight: '500'}}>Search</Text>
           </TouchableOpacity>
@@ -152,7 +179,44 @@ class StallListScreen extends React.Component {
               return (
                 <TouchableOpacity
                   onPress={() => {
-                    fetch('');
+                    if (cate.typeName === 'All') {
+                      fetch(
+                        'http://foodcout.ap-southeast-1.elasticbeanstalk.com/food-stall/lists',
+                        {
+                          method: 'GET',
+                          headers: {
+                            Accept: 'application/json',
+                            'Content-Type': 'application/json',
+                          },
+                        },
+                      )
+                        .then(Response => Response.json())
+                        .then(foodStallList => {
+                          this.setState({listFoodStall: foodStallList});
+                        })
+                        .catch(error => {
+                          console.log(error);
+                        });
+                    } else {
+                      fetch(
+                        'http://foodcout.ap-southeast-1.elasticbeanstalk.com/food-stall/filter/' +
+                          cate.typeName,
+                        {
+                          method: 'GET',
+                          headers: {
+                            Accept: 'application/json',
+                            'Content-Type': 'application/json',
+                          },
+                        },
+                      )
+                        .then(Response => Response.json())
+                        .then(foodStallList => {
+                          this.setState({listFoodStall: foodStallList});
+                        })
+                        .catch(error => {
+                          console.log(error);
+                        });
+                    }
                   }}
                   key={index}
                   style={styles.tag}>

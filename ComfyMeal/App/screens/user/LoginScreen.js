@@ -63,8 +63,9 @@ class LoginScreen extends React.Component {
           },
         },
       )
-        .then((Response) => Response.json())
-        .then((wallet) => {
+        .then()
+        .then(Response => Response.json())
+        .then(wallet => {
           this.setState({
             wallet: {
               walletId: wallet.id,
@@ -72,7 +73,7 @@ class LoginScreen extends React.Component {
             },
           });
         })
-        .catch((error) => {
+        .catch(error => {
           console.log(error);
         });
       await AsyncStorage.setItem('user-info', JSON.stringify(user.user));
@@ -111,7 +112,7 @@ class LoginScreen extends React.Component {
       const {accessToken} = data;
       console.log('accessToken', accessToken);
       fetch(
-        'http://192.168.1.102:8080/user/customer/social-account?accessToken=' +
+        'http://foodcout.ap-southeast-1.elasticbeanstalk.com/user/customer/social-account?accessToken=' +
           accessToken +
           '&provider=Facebook',
         {
@@ -122,8 +123,8 @@ class LoginScreen extends React.Component {
           },
         },
       )
-        .then((Response) => Response.json())
-        .then((wallet) => {
+        .then(Response => Response.json())
+        .then(wallet => {
           this.setState({
             wallet: {
               walletId: wallet.id,
@@ -131,7 +132,7 @@ class LoginScreen extends React.Component {
             },
           });
         })
-        .catch((error) => {
+        .catch(error => {
           console.log(error);
         });
       const infoRequest = new GraphRequest(

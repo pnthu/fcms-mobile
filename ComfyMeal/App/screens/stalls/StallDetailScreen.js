@@ -17,6 +17,7 @@ class StallDetailScreen extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      foodStallId: this.props.navigation.state.params.foodstall,
       foodStallMenu: [],
       foodStallDetail: {
         foodStallImage: '',
@@ -45,11 +46,11 @@ class StallDetailScreen extends React.Component {
         },
       },
     )
-      .then((Response) => Response.json())
-      .then((detail) => {
+      .then(Response => Response.json())
+      .then(detail => {
         this.setState({foodStallDetail: detail});
       })
-      .catch((error) => {
+      .catch(error => {
         console.log(error);
       });
 
@@ -65,13 +66,14 @@ class StallDetailScreen extends React.Component {
         },
       },
     )
-      .then((Response) => Response.json())
-      .then((menu) => {
+      .then(Response => Response.json())
+      .then(menu => {
         this.setState({foodStallMenu: menu});
       })
-      .catch((error) => {
+      .catch(error => {
         console.log(error);
       });
+
     try {
       const response = await AsyncStorage.getItem('cart');
       const cart = JSON.parse(response);
@@ -81,14 +83,15 @@ class StallDetailScreen extends React.Component {
     }
   };
 
-  addToCart = (food) => {
+  addToCart = food => {
     if (this.state.cart === null) {
       ToastAndroid.show('Please login to order our food.', ToastAndroid.SHORT);
       this.props.navigation.navigate('ProfileTab', {
         foodstall: this.props.navigation.state.params.foodstall,
       });
     } else {
-      food.foodStallId = 'fs1';
+      console.log(this.state.foodStallId);
+      food.foodStallId = this.state.foodStallId;
       if (this.state.cart instanceof Array) {
         for (let i = 0; i < this.state.cart.length; i++) {
           if (this.state.cart[i].id === food.id) {
@@ -144,7 +147,7 @@ class StallDetailScreen extends React.Component {
               justifyContent: 'space-between',
               alignItems: 'center',
             }}>
-            <Text style={styles.type}></Text>
+            <Text style={styles.type} />
             <View style={{flexDirection: 'row'}}>
               <StarRating
                 disabled
@@ -186,7 +189,25 @@ class StallDetailScreen extends React.Component {
                     }}>
                     {item.foodDescription}
                   </Text>
-                  <Text>{item.originPrice}đ</Text>
+                  {item.retailPrice == 0 ? (
+                    <Text>{item.originPrice}đ</Text>
+                  ) : (
+                    <>
+                      <Text
+                        style={{
+                          textDecorationLine: 'line-through',
+                          textDecorationStyle: 'solid',
+                        }}>
+                        {item.originPrice}đ
+                      </Text>
+                      <Text
+                        style={{
+                          color: 'red',
+                        }}>
+                        {item.retailPrice}đ
+                      </Text>
+                    </>
+                  )}
                 </View>
                 <FontAwesome5 name="plus-circle" style={styles.btnAdd} />
               </TouchableOpacity>
