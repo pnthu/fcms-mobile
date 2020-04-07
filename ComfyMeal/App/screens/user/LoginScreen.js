@@ -23,7 +23,7 @@ class LoginScreen extends React.Component {
     this.state = {
       user: {},
       tokens: {},
-      wallet: {walletId: 0, walletBalance: 0},
+      wallet: {walletId: 0, walletBalance: 0, qrCode: ''},
     };
   }
 
@@ -70,6 +70,7 @@ class LoginScreen extends React.Component {
             wallet: {
               walletId: wallet.id,
               walletBalance: wallet.balances,
+              qrCode: wallet.qrCode,
             },
           });
           AsyncStorage.setItem(
@@ -129,6 +130,7 @@ class LoginScreen extends React.Component {
             wallet: {
               walletId: wallet.id,
               walletBalance: wallet.balances,
+              qrCode: wallet.qrCode,
             },
           });
           AsyncStorage.setItem(
