@@ -96,6 +96,9 @@ class ProfileScreen extends React.Component {
             <Text>Logout</Text>
           </TouchableOpacity>
         </View>
+        <Text style={{textAlign: 'center', marginBottom: 5}}>
+          Customer Wallet ID: {this.state.customerWallet.walletId}
+        </Text>
         <Image
           style={{
             width: '80%',
@@ -109,7 +112,7 @@ class ProfileScreen extends React.Component {
               'https://fcms-images.s3-ap-southeast-1.amazonaws.com/QRCode_1586269768163.png?fbclid=IwAR25Xx5RYqLpjjPToCuuddJYaamDwTL_NZfxyKrJiENJjGo5_wjx_LkqGNI',
           }}
         />
-        <Text style={{textAlign: 'center', marginTop: 30}}>Version 1.0.0</Text>
+        <Text style={{textAlign: 'center', marginTop: 15}}>Version 1.0.0</Text>
       </View>
     );
   }
