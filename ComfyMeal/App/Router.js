@@ -11,6 +11,7 @@ import AboutScreen from './screens/about/AboutScreen';
 import OrderScreen from './screens/orders/OrderScreen';
 import CartScreen from './screens/orders/CartScreen';
 import ProfileScreen from './screens/user/ProfileScreen';
+import OrderSuccessScreen from './screens/orders/OrderSuccessScreen';
 
 // const info = await AsyncStorage.getItem('user-info');
 
@@ -110,6 +111,10 @@ const RootStack = createStackNavigator(
       navigationOptions: {headerShown: false},
     },
     CartInfo: {screen: CartScreen, navigationOptions: {headerShown: false}},
+    OrderSuccess: {
+      screen: OrderSuccessScreen,
+      navigationOptions: {headerShown: false},
+    },
   },
   {initialRouteName: 'UserHome'},
 );

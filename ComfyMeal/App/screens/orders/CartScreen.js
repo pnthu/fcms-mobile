@@ -112,7 +112,9 @@ class CartScreen extends React.Component {
             );
           }}
         />
-        <TouchableOpacity style={styles.btnConfirm}>
+        <TouchableOpacity
+          style={styles.btnConfirm}
+          onPress={() => this.props.navigation.navigate('OrderSuccess')}>
           <Text
             style={{
               textAlign: 'center',

@@ -137,17 +137,18 @@ class StallListScreen extends React.Component {
             marginBottom: 8,
           }}>
           <TextInput
+            value={this.state.searchText}
             style={styles.searchBar}
-            onChange={text => this.setState({searchText: text})}
+            onChangeText={text => this.setState({searchText: text})}
             placeholder="Search Food stall..."
           />
           <TouchableOpacity
             style={styles.searchBtn}
             onPress={() => {
-              console.log(this.state.searchText);
               fetch(
-                'http://foodcout.ap-southeast-1.elasticbeanstalk.com/food/search?name=' +
-                  this.state.searchText,
+                `http://foodcout.ap-southeast-1.elasticbeanstalk.com/food-stall/search?name=${
+                  this.state.searchText
+                }`,
                 {
                   method: 'GET',
                   headers: {
@@ -158,7 +159,6 @@ class StallListScreen extends React.Component {
               )
                 .then(Response => Response.json())
                 .then(foodStallList => {
-                  console.log(this.state.searchText);
                   this.setState({listFoodStall: foodStallList});
                 })
                 .catch(error => {

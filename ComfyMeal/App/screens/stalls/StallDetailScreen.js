@@ -27,7 +27,6 @@ class StallDetailScreen extends React.Component {
         foodStallrating: 0,
       },
       cart: null,
-      quantity: 0,
     };
   }
 
@@ -70,6 +69,11 @@ class StallDetailScreen extends React.Component {
     )
       .then(Response => Response.json())
       .then(menu => {
+        if (menu instanceof Array) {
+          for (let i = 0; i < menu.length; i++) {
+            menu[i].quantity = 0;
+          }
+        }
         this.setState({foodStallMenu: menu});
       })
       .catch(error => {
@@ -80,30 +84,50 @@ class StallDetailScreen extends React.Component {
       const response = await AsyncStorage.getItem('cart');
       const cart = JSON.parse(response);
       cart && this.setState({cart: cart});
-      cart && this.calculateTotal();
-      cart && console.log('async cart', JSON.stringify(this.state.cart));
+      // cart && console.log('async cart', JSON.stringify(this.state.cart));
     } catch (error) {
       console.log('Something was wrong, ', error);
     }
-  };
 
-  calculateTotal = () => {
-    var total = 0;
-    if (this.state.cart instanceof Array) {
-      if (this.state.cart.length !== 0) {
-        for (let i = 0; i < this.state.cart.length; i++) {
-          if (this.state.cart[i].foods.length !== 0) {
-            for (let j = 0; j < this.state.cart[i].foods.length; j++) {
-              total += this.state.cart[i].foods[j].quantity;
-              console.log('total', total);
+    if (!!this.state.cart && this.state.cart.length !== 0) {
+      console.log('co cart');
+      for (let i = 0; i < this.state.foodStallMenu.length; i++) {
+        console.log('id', this.state.foodStallMenu[i].id);
+        if (this.state.cart instanceof Array) {
+          console.log('cart la mang');
+          for (let j = 0; j < this.state.cart.length; j++) {
+            console.log(
+              'equal',
+              this.state.foodStallMenu[i].id === this.state.cart[j].id,
+            );
+            if (this.state.foodStallMenu[i].id === this.state.cart[j].id) {
+              console.log('ahihi');
+              const newMenu = this.state.foodStallMenu;
+              newMenu[i].quantity += 1;
+              this.setState({foodStallMenu: newMenu});
             }
           }
         }
       }
-      console.log('total', total);
-      this.setState({quantity: total});
     }
+    this.forceUpdate();
   };
+
+  // componentDidUpdate = () => {
+  //   var newMenu = this.state.foodStallMenu;
+  //   if (!!this.state.cart && this.state.cart.length !== 0) {
+  //     for (let i = 0; i < this.state.foodStallMenu.length; i++) {
+  //       if (this.state.cart instanceof Array) {
+  //         for (let j = 0; j < this.state.cart.length; j++) {
+  //           if (this.state.foodStallMenu[i].id === this.state.cart[j].id) {
+  //             newMenu[i].quantity += 1;
+  //           }
+  //         }
+  //       }
+  //     }
+  //     this.setState({foodStallMenu: newMenu});
+  //   }
+  // };
 
   addToCart = async food => {
     if (this.state.cart === null) {
@@ -112,91 +136,21 @@ class StallDetailScreen extends React.Component {
         foodstall: this.props.navigation.state.params.foodstall,
       });
     } else {
-      if (this.state.cart instanceof Array) {
-        if (this.state.cart.length === 0) {
-          const newCart = update(this.state.cart, {
-            $push: [
-              {
-                foodStallId: this.state.foodStallDetail.foodStallId,
-                foodStallName: this.state.foodStallDetail.foodStallName,
-                foods: [],
-              },
-            ],
-          });
-          const addedCart = update(newCart, {
-            0: {
-              foods: {
-                $push: [
-                  {
-                    food: food,
-                    quantity: 1,
-                  },
-                ],
-              },
-            },
-          });
-          this.setState({cart: addedCart});
-          this.calculateTotal();
-          console.log('here');
-        } else {
-          for (let i = 0; i < this.state.cart.length; i++) {
-            if (
-              this.state.cart[i].foodStallId ===
-              this.state.foodStallDetail.foodStallId
-            ) {
-              for (let j = 0; j < this.state.cart[i].foods.length; j++) {
-                if (this.state.cart[i].foods[j].food.id === food.id) {
-                  const updatedCart = update(this.state.cart, {
-                    [i]: {
-                      foods: {
-                        [j]: {
-                          quantity: {
-                            $apply: x => {
-                              return ++x;
-                            },
-                          },
-                        },
-                      },
-                    },
-                  });
-                  this.setState({cart: updatedCart});
-                  this.calculateTotal();
-                  break;
-                } else {
-                  const updatedCart = update(this.state.cart, {
-                    [i]: {
-                      foods: {$push: [{food: food, quantity: 1}]},
-                    },
-                  });
-                  this.setState({cart: updatedCart});
-                  this.calculateTotal();
-                }
-              }
-            } else if (i === this.state.cart.length - 1) {
-              const newCart = update(this.state.cart, {
-                $push: [
-                  {
-                    foodStallId: this.state.foodStallDetail.foodStallId,
-                    foodStallName: this.state.foodStallDetail.foodStallName,
-                    foods: [],
-                  },
-                ],
-              });
-              const addedCart = update(newCart, {
-                [this.state.cart.length]: {
-                  foods: {$push: [{food: food, quantity: 1}]},
-                },
-              });
-              console.log('addedCart', addedCart);
-              this.setState({cart: addedCart});
-              this.calculateTotal();
-            }
-          }
+      const currentCart = this.state.cart;
+      if (currentCart instanceof Array) {
+        currentCart.push(food);
+        this.setState({cart: currentCart});
+        await AsyncStorage.setItem('cart', JSON.stringify(this.state.cart));
+      }
+      const currentMenu = this.state.foodStallMenu;
+      for (let i = 0; i < currentMenu.length; i++) {
+        if (currentMenu[i].id === food.id) {
+          currentMenu[i].quantity += 1;
+          break;
         }
       }
-      await AsyncStorage.setItem('cart', JSON.stringify(this.state.cart));
+      this.setState({foodStallMenu: currentMenu});
     }
-    console.log('cart', JSON.stringify(this.state.cart));
   };
 
   onNavigateToCart = async () => {
@@ -205,6 +159,7 @@ class StallDetailScreen extends React.Component {
 
   render() {
     // console.log('Render: ' + foodstall);
+    console.log('menu', this.state.foodStallMenu);
     return (
       <>
         <Image
@@ -239,7 +194,6 @@ class StallDetailScreen extends React.Component {
               justifyContent: 'flex-end',
               alignItems: 'center',
             }}>
-            {/* <Text style={styles.type}></Text> */}
             <View style={{flexDirection: 'row'}}>
               <StarRating
                 disabled
@@ -274,6 +228,8 @@ class StallDetailScreen extends React.Component {
                     {item.foodName}
                   </Text>
                   <Text
+                    numberOfLines={2}
+                    ellipsizeMode="tail"
                     style={{
                       color: '#808080',
                       fontWeight: '200',
@@ -301,13 +257,21 @@ class StallDetailScreen extends React.Component {
                     </>
                   )}
                 </View>
-                <FontAwesome5 name="plus-circle" style={styles.btnAdd} />
+                <View>
+                  {item.quantity === 0 || (
+                    <>
+                      <FontAwesome5 name="minus-circle" />
+                      <Text>{item.quantity}</Text>
+                    </>
+                  )}
+                  <FontAwesome5 name="plus-circle" />
+                </View>
               </TouchableOpacity>
             )}
             keyExtractor={(item, index) => index.toString()}
           />
         </View>
-        {(this.state.cart && this.state.cart.length === 0) || (
+        {!this.state.cart || this.state.cart.length === 0 || (
           <>
             <TouchableOpacity
               style={styles.btnCart}
@@ -317,7 +281,7 @@ class StallDetailScreen extends React.Component {
                 color="white"
                 style={{fontSize: 20}}
               />
-              <Text style={styles.quantity}>{this.state.quantity}</Text>
+              <Text style={styles.quantity}>{this.state.cart.length}</Text>
             </TouchableOpacity>
           </>
         )}
@@ -345,21 +309,12 @@ const styles = StyleSheet.create({
     marginTop: 2,
     marginRight: 6,
   },
-  // type: {
-  //   borderWidth: 1,
-  //   borderColor: '#ee7739',
-  //   borderRadius: 50,
-  //   marginRight: 8,
-  //   marginBottom: 8,
-  //   paddingVertical: 6,
-  //   paddingHorizontal: 12,
-  //   color: '#ee7739',
-  // },
   foodCard: {
     flexDirection: 'row',
     borderTopWidth: 1,
     borderColor: '#dadada',
     paddingVertical: 12,
+    paddingRight: 120,
   },
   foodImg: {
     width: 100,
