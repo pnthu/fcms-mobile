@@ -51,8 +51,20 @@ class OrderScreen extends React.Component {
       });
   };
 
-  _renderContent = () => {
-    console.log('REDNER ITEM');
+  _renderHeader = (item, expanded) => {
+    return (
+      <View style={styles.card}>
+        <Text style={{fontWeight: '600'}}> {item.purchaseDate}</Text>
+        {expanded ? (
+          <FontAwesome5 style={{fontSize: 18}} name="angle-down" />
+        ) : (
+          <FontAwesome5 style={{fontSize: 18}} name="angle-up" />
+        )}
+      </View>
+    );
+  };
+
+  _renderContent = item => {
     fetch(
       'http://foodcout.ap-southeast-1.elasticbeanstalk.com/cart/detail/' +
         item.id,
@@ -77,53 +89,16 @@ class OrderScreen extends React.Component {
         {this.state.historyOrderDetail instanceof Array &&
           this.state.historyOrderDetail.map((detail, index) => {
             return (
-              <>
+              <View key={index}>
                 <Text>{detail.purchasedPrice}</Text>
                 <Text>{detail.foodName}</Text>
                 <Text>{detail.quantity}</Text>
                 <Text>{detail.foodStallName}</Text>
                 <Text>{detail.foodName}</Text>
-              </>
+              </View>
             );
           })}
       </>
-    );
-  };
-
-  _renderHeader = (item, expanded) => {
-    console.log('REDNER HEADER');
-    console.log(item);
-    return (
-      <TouchableOpacity
-        style={styles.card}
-        // onPress={() => {
-        //   fetch(
-        //     'http://foodcout.ap-southeast-1.elasticbeanstalk.com/cart/detail/' +
-        //       item.id,
-        //     {
-        //       method: 'GET',
-        //       headers: {
-        //         Accept: 'application/json',
-        //         'Content-Type': 'application/json',
-        //       },
-        //     },
-        //   )
-        //     .then((Response) => Response.json())
-        //     .then((historyDetail) => {
-        //       this.setState({historyOrderDetail: historyDetail});
-        //     })
-        //     .catch((error) => {
-        //       console.log(error);
-        //     });
-        // }}
-      >
-        <Text>{item.purchaseDate}</Text>
-        {expanded ? (
-          <FontAwesome style={{fontSize: 18}} name="angle-down" />
-        ) : (
-          <FontAwesome style={{fontSize: 18}} name="angle-up" />
-        )}
-      </TouchableOpacity>
     );
   };
 
@@ -149,7 +124,6 @@ class OrderScreen extends React.Component {
                 for (let i = 0; i < item.fs.length; i++) {
                   mappedName += item.fs[i] + ', ';
                 }
-
                 return (
                   <TouchableOpacity style={styles.card}>
                     <FontAwesome5 name="clock" solid style={styles.icon} />
@@ -186,10 +160,10 @@ class OrderScreen extends React.Component {
             activeTextStyle={{fontWeight: 'bold', color: 'white'}}>
             <Accordion
               dataArray={this.state.historyOrder}
+              animation={true}
+              expanded={true}
               renderHeader={this._renderHeader}
               renderContent={this._renderContent}
-              expanded={true}
-              animation={true}
             />
             {/* <FlatList
               style={styles.tabContainer}

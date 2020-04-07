@@ -68,7 +68,7 @@ class StallListScreen extends React.Component {
         console.log(error);
       });
 
-    await fetch(
+    fetch(
       'http://foodcout.ap-southeast-1.elasticbeanstalk.com/food/filter/top-food/lists',
       {
         method: 'GET',
