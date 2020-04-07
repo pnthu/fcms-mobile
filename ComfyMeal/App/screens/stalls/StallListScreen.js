@@ -9,6 +9,7 @@ import {
   FlatList,
   Dimensions,
   ScrollView,
+  RefreshControl,
 } from 'react-native';
 import Carousel from 'react-native-snap-carousel';
 import StarRating from 'react-native-star-rating';
@@ -22,10 +23,12 @@ class StallListScreen extends React.Component {
       listFoodStall: [],
       topFoodList: [],
       searchText: '',
+      foodStallName: '',
+      refreshing: false,
     };
   }
 
-  componentDidMount() {
+  initData = () => {
     fetch(
       'http://foodcout.ap-southeast-1.elasticbeanstalk.com/food-court/type/lists',
       {
@@ -65,7 +68,7 @@ class StallListScreen extends React.Component {
         console.log(error);
       });
 
-    fetch(
+    await fetch(
       'http://foodcout.ap-southeast-1.elasticbeanstalk.com/food/filter/top-food/lists',
       {
         method: 'GET',
@@ -82,7 +85,17 @@ class StallListScreen extends React.Component {
       .catch(error => {
         console.log(error);
       });
-  }
+  };
+
+  componentDidMount = async () => {
+    await this.initData();
+  };
+
+  onRefresh = async () => {
+    this.setState({refreshing: true});
+    await this.initData();
+    this.setState({refreshing: false});
+  };
 
   renderCarousel = ({item, index}) => {
     return (
@@ -98,9 +111,6 @@ class StallListScreen extends React.Component {
         <Text ellipsizeMode="tail" numberOfLines={1} style={styles.fsTitle}>
           {item.foodName}
         </Text>
-        <Text ellipsizeMode="tail" numberOfLines={2}>
-          {item.description}
-        </Text>
         <StarRating
           disabled
           halfStarEnabled
@@ -108,7 +118,7 @@ class StallListScreen extends React.Component {
           fullStarColor="#ffdd00"
           halfStarColor="#ffdd00"
           emptyStarColor="#ffdd00"
-          rating={item.rating}
+          rating={item.foodRating}
           containerStyle={styles.stars}
         />
       </TouchableOpacity>
@@ -159,7 +169,14 @@ class StallListScreen extends React.Component {
             <Text style={{color: '#ee7739', fontWeight: '500'}}>Search</Text>
           </TouchableOpacity>
         </View>
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={this.state.refreshing}
+              onRefresh={this.onRefresh}
+            />
+          }>
           <View>
             <Text style={styles.topRating}>Top Rating Food</Text>
             <Carousel
@@ -249,9 +266,6 @@ class StallListScreen extends React.Component {
                   style={styles.fsTitle}>
                   {item.foodStallName}
                 </Text>
-                <Text ellipsizeMode="tail" numberOfLines={2}>
-                  {item.foodStallDescription}
-                </Text>
                 <StarRating
                   disabled
                   halfStarEnabled
@@ -291,8 +305,7 @@ const styles = StyleSheet.create({
   searchBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 12,
+    justifyContent: 'space-evenly',
     width: '25%',
     color: 'white',
     borderColor: '#ee7739',

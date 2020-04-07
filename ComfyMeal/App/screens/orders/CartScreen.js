@@ -9,75 +9,7 @@ import {
   Image,
 } from 'react-native';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-
-const categories = [
-  {name: 'FastFood'},
-  {name: 'Drink'},
-  {name: 'Grill & Hot Pot'},
-  {name: 'Rice'},
-  {name: 'Sushi'},
-  {name: 'Dimsum'},
-  {name: 'Salad'},
-];
-
-const data = [
-  {
-    fsId: 'fs1',
-    foods: [
-      {
-        name: 'Fried Potato',
-        price: 20000,
-        description:
-          'Fresh potato from New Zealand, fried with non-reused oil, gives you the best food quality.',
-        type: categories[0],
-        image: require('../../../assets/kfc.png'),
-        rating: 4.8,
-        id: 'food1',
-        quantity: 2,
-      },
-      {
-        name: 'Fried Potato',
-        price: 20000,
-        description:
-          'Fresh potato from New Zealand, fried with non-reused oil, gives you the best food quality.',
-        type: categories[0],
-        image: require('../../../assets/kfc.png'),
-        rating: 4.8,
-        id: 'food2',
-        quantity: 3,
-      },
-    ],
-  },
-  {
-    fsId: 'fs2',
-    foods: [
-      {
-        name: 'Fried Potato',
-        price: 20000,
-        description:
-          'Fresh potato from New Zealand, fried with non-reused oil, gives you the best food quality.',
-        type: categories[0],
-        image: require('../../../assets/kfc.png'),
-        rating: 4.8,
-        id: 'food3',
-        quantity: 1,
-        fsId: 'fs1',
-      },
-      {
-        name: 'Fried Potato',
-        price: 20000,
-        description:
-          'Fresh potato from New Zealand, fried with non-reused oil, gives you the best food quality.',
-        type: categories[0],
-        image: require('../../../assets/kfc.png'),
-        rating: 4.8,
-        id: 'food4',
-        quantity: 4,
-        fsId: 'fs2',
-      },
-    ],
-  },
-];
+import AsyncStorage from '@react-native-community/async-storage';
 
 class CartScreen extends React.Component {
   constructor(props) {
@@ -107,6 +39,9 @@ class CartScreen extends React.Component {
       this.props.navigation.goBack();
       return true;
     });
+    const response = await AsyncStorage.getItem('cart');
+    const cart = JSON.parse(response);
+    this.setState({cart: cart});
   };
 
   render() {
@@ -125,14 +60,14 @@ class CartScreen extends React.Component {
         </View>
 
         <FlatList
-          data={data}
+          data={this.state.cart}
           showsVerticalScrollIndicator={false}
           numColumns={1}
           keyExtractor={(item, index) => index.toString()}
           renderItem={({item, index}) => {
             return (
               <View key={index}>
-                <Text>{item.fsId}</Text>
+                <Text>{item.foodStallName}</Text>
                 <FlatList
                   data={item.foods}
                   showsVerticalScrollIndicator={false}
@@ -142,7 +77,10 @@ class CartScreen extends React.Component {
                   renderItem={({item, index}) => {
                     return (
                       <View style={styles.foodCard}>
-                        <Image source={item.image} style={styles.foodImg} />
+                        <Image
+                          source={{uri: item.food.foodImage}}
+                          style={styles.foodImg}
+                        />
                         <View>
                           <Text
                             style={{
@@ -150,7 +88,7 @@ class CartScreen extends React.Component {
                               fontWeight: 'bold',
                               marginBottom: 4,
                             }}>
-                            {item.name}
+                            {item.food.foodName}
                           </Text>
                           <Text
                             style={{
@@ -158,9 +96,9 @@ class CartScreen extends React.Component {
                               fontWeight: '200',
                               marginBottom: 4,
                             }}>
-                            {item.description}
+                            {item.foodDescription}
                           </Text>
-                          <Text>{item.price}đ</Text>
+                          <Text>{item.food.originPrice}đ</Text>
                         </View>
                         <FontAwesome5
                           name="plus-circle"

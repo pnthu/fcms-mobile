@@ -1,13 +1,6 @@
 import * as React from 'react';
 import {StyleSheet, View, Image, Text, ScrollView} from 'react-native';
 
-// const fcInfo = {
-//   name: 'The Amazing Foodcourt',
-//   address: 'Đường D1 Khu Công nghệ cao, P.Long Thạnh Mỹ, Q.9, TP.HCM',
-//   description:
-//     'This is a description. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque placerat elit maximus, cursus ante a, dignissim odio. Nullam gravida neque id arcu egestas tempus. Aenean nunc quam, laoreet in ornare eu, lacinia ac neque. Sed imperdiet ultrices fringilla. Aliquam sed diam magna. Maecenas ullamcorper nibh nec egestas commodo. Duis accumsan ut nisi eleifend mollis.',
-// };
-
 class AboutScreen extends React.Component {
   constructor(props) {
     super(props);
@@ -21,7 +14,7 @@ class AboutScreen extends React.Component {
     };
   }
 
-  componentDidMount() {
+  componentDidMount = () => {
     fetch(
       'http://foodcout.ap-southeast-1.elasticbeanstalk.com/food-court/about',
       {
@@ -32,15 +25,16 @@ class AboutScreen extends React.Component {
         },
       },
     )
-      .then((Response) => Response.json())
-      .then((response) => {
+      .then(Response => Response.json())
+      .then(response => {
         this.setState({foodCourtInformation: response});
       })
-      .catch((error) => {
+      .catch(error => {
         console.log(error);
       });
-  }
+  };
   render() {
+    console.log('fc', this.state.foodCourtInformation);
     return (
       <View style={styles.container}>
         <Image

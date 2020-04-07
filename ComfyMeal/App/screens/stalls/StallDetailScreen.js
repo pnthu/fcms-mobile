@@ -1,4 +1,5 @@
 import * as React from 'react';
+import update from 'immutability-helper';
 import {
   StyleSheet,
   View,
@@ -26,6 +27,7 @@ class StallDetailScreen extends React.Component {
         foodStallrating: 0,
       },
       cart: null,
+      quantity: 0,
     };
   }
 
@@ -78,33 +80,123 @@ class StallDetailScreen extends React.Component {
       const response = await AsyncStorage.getItem('cart');
       const cart = JSON.parse(response);
       cart && this.setState({cart: cart});
+      cart && this.calculateTotal();
+      cart && console.log('async cart', JSON.stringify(this.state.cart));
     } catch (error) {
       console.log('Something was wrong, ', error);
     }
   };
 
-  addToCart = food => {
+  calculateTotal = () => {
+    var total = 0;
+    if (this.state.cart instanceof Array) {
+      if (this.state.cart.length !== 0) {
+        for (let i = 0; i < this.state.cart.length; i++) {
+          if (this.state.cart[i].foods.length !== 0) {
+            for (let j = 0; j < this.state.cart[i].foods.length; j++) {
+              total += this.state.cart[i].foods[j].quantity;
+              console.log('total', total);
+            }
+          }
+        }
+      }
+      console.log('total', total);
+      this.setState({quantity: total});
+    }
+  };
+
+  addToCart = async food => {
     if (this.state.cart === null) {
       ToastAndroid.show('Please login to order our food.', ToastAndroid.SHORT);
       this.props.navigation.navigate('ProfileTab', {
         foodstall: this.props.navigation.state.params.foodstall,
       });
     } else {
-      console.log(this.state.foodStallId);
-      food.foodStallId = this.state.foodStallId;
       if (this.state.cart instanceof Array) {
-        for (let i = 0; i < this.state.cart.length; i++) {
-          if (this.state.cart[i].id === food.id) {
-            this.state.cart[i].quantity++;
-            break;
+        if (this.state.cart.length === 0) {
+          const newCart = update(this.state.cart, {
+            $push: [
+              {
+                foodStallId: this.state.foodStallDetail.foodStallId,
+                foodStallName: this.state.foodStallDetail.foodStallName,
+                foods: [],
+              },
+            ],
+          });
+          const addedCart = update(newCart, {
+            0: {
+              foods: {
+                $push: [
+                  {
+                    food: food,
+                    quantity: 1,
+                  },
+                ],
+              },
+            },
+          });
+          this.setState({cart: addedCart});
+          this.calculateTotal();
+          console.log('here');
+        } else {
+          for (let i = 0; i < this.state.cart.length; i++) {
+            if (
+              this.state.cart[i].foodStallId ===
+              this.state.foodStallDetail.foodStallId
+            ) {
+              for (let j = 0; j < this.state.cart[i].foods.length; j++) {
+                if (this.state.cart[i].foods[j].food.id === food.id) {
+                  const updatedCart = update(this.state.cart, {
+                    [i]: {
+                      foods: {
+                        [j]: {
+                          quantity: {
+                            $apply: x => {
+                              return ++x;
+                            },
+                          },
+                        },
+                      },
+                    },
+                  });
+                  this.setState({cart: updatedCart});
+                  this.calculateTotal();
+                  break;
+                } else {
+                  const updatedCart = update(this.state.cart, {
+                    [i]: {
+                      foods: {$push: [{food: food, quantity: 1}]},
+                    },
+                  });
+                  this.setState({cart: updatedCart});
+                  this.calculateTotal();
+                }
+              }
+            } else if (i === this.state.cart.length - 1) {
+              const newCart = update(this.state.cart, {
+                $push: [
+                  {
+                    foodStallId: this.state.foodStallDetail.foodStallId,
+                    foodStallName: this.state.foodStallDetail.foodStallName,
+                    foods: [],
+                  },
+                ],
+              });
+              const addedCart = update(newCart, {
+                [this.state.cart.length]: {
+                  foods: {$push: [{food: food, quantity: 1}]},
+                },
+              });
+              console.log('addedCart', addedCart);
+              this.setState({cart: addedCart});
+              this.calculateTotal();
+            }
           }
         }
-        food.quantity = 0;
-        this.setState({cart: this.state.cart.push(food)});
-        //setState xong rồi gắn vô AsyncStorage
       }
-      console.log('cart', this.state.cart);
+      await AsyncStorage.setItem('cart', JSON.stringify(this.state.cart));
     }
+    console.log('cart', JSON.stringify(this.state.cart));
   };
 
   onNavigateToCart = async () => {
@@ -144,10 +236,10 @@ class StallDetailScreen extends React.Component {
             style={{
               flexDirection: 'row',
               marginTop: 6,
-              justifyContent: 'space-between',
+              justifyContent: 'flex-end',
               alignItems: 'center',
             }}>
-            <Text style={styles.type} />
+            {/* <Text style={styles.type}></Text> */}
             <View style={{flexDirection: 'row'}}>
               <StarRating
                 disabled
@@ -225,8 +317,8 @@ class StallDetailScreen extends React.Component {
                 color="white"
                 style={{fontSize: 20}}
               />
+              <Text style={styles.quantity}>{this.state.quantity}</Text>
             </TouchableOpacity>
-            <Text style={styles.quantity}>1</Text>
           </>
         )}
       </>
@@ -241,7 +333,7 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingHorizontal: 20,
   },
-  stallImage: {width: '100%', height: 300},
+  stallImage: {width: '100%', height: 150},
   name: {
     fontSize: 25,
     textAlign: 'center',
@@ -253,16 +345,16 @@ const styles = StyleSheet.create({
     marginTop: 2,
     marginRight: 6,
   },
-  type: {
-    borderWidth: 1,
-    borderColor: '#ee7739',
-    borderRadius: 50,
-    marginRight: 8,
-    marginBottom: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    color: '#ee7739',
-  },
+  // type: {
+  //   borderWidth: 1,
+  //   borderColor: '#ee7739',
+  //   borderRadius: 50,
+  //   marginRight: 8,
+  //   marginBottom: 8,
+  //   paddingVertical: 6,
+  //   paddingHorizontal: 12,
+  //   color: '#ee7739',
+  // },
   foodCard: {
     flexDirection: 'row',
     borderTopWidth: 1,
@@ -294,8 +386,8 @@ const styles = StyleSheet.create({
   },
   quantity: {
     position: 'absolute',
-    bottom: 40,
-    left: 48,
+    bottom: 34,
+    left: 34,
     borderWidth: 3,
     borderColor: 'white',
     borderRadius: 12,
