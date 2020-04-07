@@ -72,6 +72,10 @@ class LoginScreen extends React.Component {
               walletBalance: wallet.balances,
             },
           });
+          AsyncStorage.setItem(
+            'customer-wallet',
+            JSON.stringify(this.state.wallet),
+          );
         })
         .catch(error => {
           console.log(error);
@@ -81,10 +85,6 @@ class LoginScreen extends React.Component {
       const cart = [];
       await AsyncStorage.setItem('cart', JSON.stringify(cart));
       this.props.navigation.navigate('CustomerHome');
-      await AsyncStorage.setItem(
-        'customer-wallet',
-        JSON.stringify(this.state.wallet),
-      );
     } catch (error) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         console.log('User has cancelled');
@@ -131,6 +131,10 @@ class LoginScreen extends React.Component {
               walletBalance: wallet.balances,
             },
           });
+          AsyncStorage.setItem(
+            'customer-wallet',
+            JSON.stringify(this.state.wallet),
+          );
         })
         .catch(error => {
           console.log(error);

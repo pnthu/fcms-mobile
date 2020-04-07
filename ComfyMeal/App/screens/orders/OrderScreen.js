@@ -3,6 +3,7 @@ import {StyleSheet, View, Text, FlatList, TouchableOpacity} from 'react-native';
 import {Tabs, Tab, Accordion} from 'native-base';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const data = [
   {
@@ -19,21 +20,20 @@ class OrderScreen extends React.Component {
       shoppingCart: [],
       historyOrder: [],
       historyOrderDetail: [],
-      walletId: '',
+      walletId: 0,
     };
   }
 
   componentDidMount = async () => {
-    // const currentShoppingCart = JSON.parse(await AsyncStorage.getItem('cart'));
-    // const customerWallet = JSON.parse(
-    //   await AsyncStorage.getItem('customer-wallet'),
-    // );
-    // console.log(customerWallet + ' This is wallet');
-    // this.setState({walletId: customerWallet.walletId});
-    // console.log(this.state.walletId + 'SADASDASDASDASD');
+    const currentShoppingCart = JSON.parse(await AsyncStorage.getItem('cart'));
+    const customerWallet = JSON.parse(
+      await AsyncStorage.getItem('customer-wallet'),
+    );
+    this.setState({walletId: customerWallet.walletId});
 
     fetch(
-      'http://foodcout.ap-southeast-1.elasticbeanstalk.com/cart/history/122',
+      'http://foodcout.ap-southeast-1.elasticbeanstalk.com/cart/history/' +
+        this.state.walletId,
       {
         method: 'GET',
         headers: {
@@ -53,12 +53,104 @@ class OrderScreen extends React.Component {
 
   _renderHeader = (item, expanded) => {
     return (
-      <View style={styles.card}>
-        <Text style={{fontWeight: '600'}}> {item.purchaseDate}</Text>
-        {expanded ? (
-          <FontAwesome5 style={{fontSize: 18}} name="angle-down" />
-        ) : (
-          <FontAwesome5 style={{fontSize: 18}} name="angle-up" />
+      <View
+        style={{
+          borderWidth: 1,
+          borderRadius: 10,
+          borderColor: '#e4e4e4',
+          paddingVertical: 4,
+          marginTop: 5,
+          marginBottom: 5,
+          paddingLeft: 8,
+          paddingRight: 30,
+        }}>
+        <View style={{flexDirection: 'row'}}>
+          <Text style={{fontWeight: '600', fontSize: 14}}>
+            Purchase Date: {item.purchaseDate}
+          </Text>
+          <Text style={{fontWeight: '600', marginLeft: 'auto', fontSize: 14}}>
+            Total Price: {item.totalPrice}
+          </Text>
+        </View>
+        {item.cartStatus === 'CANCEL' && (
+          <View style={{flexDirection: 'row'}}>
+            <FontAwesome
+              name="warning"
+              style={{
+                fontSize: 18,
+                color: 'red',
+                marginRight: 6,
+              }}
+            />
+            <Text
+              style={{
+                marginRight: 'auto',
+                marginBottom: 4,
+                fontSize: 16,
+                color: 'red',
+              }}>
+              {item.cartStatus}
+            </Text>
+            {expanded ? (
+              <FontAwesome5 style={{fontSize: 18}} name="angle-down" />
+            ) : (
+              <FontAwesome5 style={{fontSize: 18}} name="angle-up" />
+            )}
+          </View>
+        )}
+        {item.cartStatus === 'DONE' && (
+          <View style={{flexDirection: 'row'}}>
+            <FontAwesome5
+              name="check-circle"
+              solid
+              style={{
+                fontSize: 18,
+                color: 'green',
+                marginRight: 6,
+              }}
+            />
+            <Text
+              style={{
+                marginRight: 'auto',
+                marginBottom: 4,
+                fontSize: 16,
+                color: 'green',
+              }}>
+              {item.cartStatus}
+            </Text>
+            {expanded ? (
+              <FontAwesome5 style={{fontSize: 18}} name="angle-down" />
+            ) : (
+              <FontAwesome5 style={{fontSize: 18}} name="angle-up" />
+            )}
+          </View>
+        )}
+        {item.cartStatus === 'INPROGRESS' && (
+          <View style={{flexDirection: 'row'}}>
+            <FontAwesome5
+              name="check-circle"
+              solid
+              style={{
+                fontSize: 18,
+                color: 'blue',
+                marginRight: 6,
+              }}
+            />
+            <Text
+              style={{
+                marginRight: 'auto',
+                marginBottom: 4,
+                fontSize: 16,
+                color: 'blue',
+              }}>
+              {item.cartStatus}
+            </Text>
+            {expanded ? (
+              <FontAwesome5 style={{fontSize: 18}} name="angle-down" />
+            ) : (
+              <FontAwesome5 style={{fontSize: 18}} name="angle-up" />
+            )}
+          </View>
         )}
       </View>
     );
@@ -89,12 +181,32 @@ class OrderScreen extends React.Component {
         {this.state.historyOrderDetail instanceof Array &&
           this.state.historyOrderDetail.map((detail, index) => {
             return (
-              <View key={index}>
-                <Text>{detail.purchasedPrice}</Text>
-                <Text>{detail.foodName}</Text>
-                <Text>{detail.quantity}</Text>
-                <Text>{detail.foodStallName}</Text>
-                <Text>{detail.foodName}</Text>
+              <View
+                key={index}
+                style={{
+                  borderWidth: 1,
+                  borderRadius: 15,
+                  borderColor: '#e4e4e4',
+                  paddingVertical: 4,
+                  paddingLeft: 25,
+                  paddingRight: 30,
+                }}>
+                <View style={{flexDirection: 'row'}}>
+                  <Text style={{fontSize: 13, fontWeight: '600'}}>
+                    Total Price: {detail.purchasedPrice}đ
+                  </Text>
+                  <Text
+                    style={{
+                      marginLeft: 'auto',
+                      fontSize: 13,
+                      fontWeight: '600',
+                    }}>
+                    Quantity: {detail.quantity}
+                  </Text>
+                </View>
+                <Text style={{fontSize: 13, fontWeight: '600'}}>
+                  Purchase: {detail.foodName} at {detail.foodStallName}
+                </Text>
               </View>
             );
           })}
