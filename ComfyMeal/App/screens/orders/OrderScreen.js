@@ -21,11 +21,16 @@ class OrderScreen extends React.Component {
       historyOrder: [],
       historyOrderDetail: [],
       walletId: 0,
+      currentOrder: [],
     };
   }
 
   componentDidMount = async () => {
-    const currentShoppingCart = JSON.parse(await AsyncStorage.getItem('cart'));
+    const currentOrder = JSON.parse(
+      await AsyncStorage.getItem('current-order'),
+    );
+    this.setState({currentOrder: currentOrder});
+
     const customerWallet = JSON.parse(
       await AsyncStorage.getItem('customer-wallet'),
     );
@@ -227,14 +232,32 @@ class OrderScreen extends React.Component {
             activeTextStyle={{fontWeight: 'bold', color: 'white'}}>
             <FlatList
               style={styles.tabContainer}
-              data={data}
+              // data={this.state.currentOrder}
               showsVerticalScrollIndicator={false}
               numColumns={1}
               keyExtractor={(item, index) => index.toString()}
-              renderItem={({item, index}) => {
+              renderItem={() => {
                 var mappedName = '';
-                for (let i = 0; i < item.fs.length; i++) {
-                  mappedName += item.fs[i] + ', ';
+                var totalPrice = 0;
+                for (let i = 0; i < this.state.currentOrder.length; i++) {
+                  mappedName += this.state.currentOrder[i].foodStallName + ', ';
+                }
+                console.log(item.foods.length + 'Length');
+                console.log();
+                for (let j = 0; j < item.foods.length; j++) {
+                  // if (
+                  //   this.state.currentOrder.foods.food[j].retailPrice == 0
+                  // ) {
+                  //   totalPrice +=
+                  //     this.state.currentOrder.foods.food[j].originPrice *
+                  //     this.state.currentOrder.foods.food[j].quantity;
+                  //   console.log(totalPrice);
+                  // } else {
+                  //   totalPrice +=
+                  //     this.state.currentOrder.foods.food[j].retailPrice *
+                  //     this.state.currentOrder.foods.food[j].quantity;
+                  //   console.log('TOTAL:  ' + totalPrice);
+                  // }
                 }
                 return (
                   <TouchableOpacity style={styles.card}>
@@ -255,10 +278,9 @@ class OrderScreen extends React.Component {
                           fontWeight: 'bold',
                           marginBottom: 4,
                           fontSize: 16,
-                        }}>
-                        {item.status}
-                      </Text>
-                      <Text style={{fontStyle: 'italic'}}>{item.price}đ</Text>
+                        }}
+                      />
+                      <Text style={{fontStyle: 'italic'}}>{totalPrice}đ</Text>
                     </View>
                   </TouchableOpacity>
                 );

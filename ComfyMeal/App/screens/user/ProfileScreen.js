@@ -96,7 +96,20 @@ class ProfileScreen extends React.Component {
             <Text>Logout</Text>
           </TouchableOpacity>
         </View>
-        <Text style={{textAlign: 'center', marginTop: 200}}>Version 1.0.0</Text>
+        <Image
+          style={{
+            width: '80%',
+            borderRadius: 4,
+            height: 300,
+            marginLeft: 'auto',
+            marginRight: 'auto',
+          }}
+          source={{
+            uri:
+              'https://fcms-images.s3-ap-southeast-1.amazonaws.com/QRCode_1586269768163.png?fbclid=IwAR25Xx5RYqLpjjPToCuuddJYaamDwTL_NZfxyKrJiENJjGo5_wjx_LkqGNI',
+          }}
+        />
+        <Text style={{textAlign: 'center', marginTop: 30}}>Version 1.0.0</Text>
       </View>
     );
   }
