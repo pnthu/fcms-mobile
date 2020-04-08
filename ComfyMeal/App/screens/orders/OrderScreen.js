@@ -120,7 +120,7 @@ class OrderScreen extends React.Component {
                 fontSize: 14,
                 color: 'red',
               }}>
-              {item.cartStatus}
+              Cancelled
             </Text>
             {expanded ? (
               <FontAwesome5 style={{fontSize: 18}} name="angle-down" />
@@ -147,7 +147,7 @@ class OrderScreen extends React.Component {
                 fontSize: 14,
                 color: 'green',
               }}>
-              {item.cartStatus}
+              Done
             </Text>
             {expanded ? (
               <FontAwesome5 style={{fontSize: 18}} name="angle-down" />
@@ -174,7 +174,7 @@ class OrderScreen extends React.Component {
                 fontSize: 14,
                 color: 'blue',
               }}>
-              {item.cartStatus}
+              Preparing
             </Text>
             {expanded ? (
               <FontAwesome5 style={{fontSize: 18}} name="angle-down" />
@@ -245,123 +245,6 @@ class OrderScreen extends React.Component {
     );
   };
 
-  _renderContentCurrentCart = item => {
-    return (
-      <>
-        {this.state.currentCart.cartItems instanceof Array &&
-          this.state.currentCart.cartItems.map((cartItems, index) => {
-            console.log(JSON.stringify(this.state.currentCart.cartItems.id));
-            console.log(JSON.stringify(cartItems));
-            return (
-              <View
-                key={index}
-                style={{
-                  borderWidth: 1,
-                  borderRadius: 15,
-                  borderColor: '#e4e4e4',
-                  paddingVertical: 4,
-                  paddingLeft: 25,
-                  paddingRight: 30,
-                }}>
-                <View style={{flexDirection: 'row'}}>
-                  <Text style={{fontSize: 13, fontWeight: '600'}}>
-                    Total Price: {cartItems.purchasedPrice}đ
-                  </Text>
-                  <Text
-                    style={{
-                      marginLeft: 'auto',
-                      fontSize: 13,
-                      fontWeight: '600',
-                    }}>
-                    Quantity: {cartItems.quantity}
-                  </Text>
-                </View>
-                <Text style={{fontSize: 13, fontWeight: '600'}}>
-                  Purchase: {cartItems.foodName} at {cartItems.foodStallName}
-                </Text>
-              </View>
-            );
-          })}
-      </>
-    );
-  };
-
-  _renderHeaderCurrentCart = (item, expanded) => {
-    return (
-      <View
-        style={{
-          borderWidth: 1,
-          borderRadius: 10,
-          borderColor: '#e4e4e4',
-          paddingVertical: 4,
-          marginTop: 5,
-          marginBottom: 5,
-          paddingLeft: 8,
-          paddingRight: 30,
-        }}>
-        <View style={{flexDirection: 'row'}}>
-          <Text style={{fontWeight: '600', marginLeft: 'auto', fontSize: 14}}>
-            Total Price: {item.totalPrice}
-          </Text>
-        </View>
-        {item.cartStatus === 'PENDING' && (
-          <View style={{flexDirection: 'row'}}>
-            <FontAwesome5
-              name="check-circle"
-              solid
-              style={{
-                fontSize: 18,
-                color: 'grey',
-                marginRight: 6,
-              }}
-            />
-            <Text
-              style={{
-                marginRight: 'auto',
-                marginBottom: 4,
-                fontSize: 14,
-                color: 'grey',
-              }}>
-              {item.cartStatus}
-            </Text>
-            {expanded ? (
-              <FontAwesome5 style={{fontSize: 18}} name="angle-down" />
-            ) : (
-              <FontAwesome5 style={{fontSize: 18}} name="angle-up" />
-            )}
-          </View>
-        )}
-        {item.cartStatus === 'INPROGRESS' && (
-          <View style={{flexDirection: 'row'}}>
-            <FontAwesome5
-              name="check-circle"
-              solid
-              style={{
-                fontSize: 18,
-                color: 'blue',
-                marginRight: 6,
-              }}
-            />
-            <Text
-              style={{
-                marginRight: 'auto',
-                marginBottom: 4,
-                fontSize: 14,
-                color: 'blue',
-              }}>
-              {item.cartStatus}
-            </Text>
-            {expanded ? (
-              <FontAwesome5 style={{fontSize: 18}} name="angle-down" />
-            ) : (
-              <FontAwesome5 style={{fontSize: 18}} name="angle-up" />
-            )}
-          </View>
-        )}
-      </View>
-    );
-  };
-
   render() {
     console.log('cart', this.state.shoppingCart);
     return (
@@ -374,63 +257,174 @@ class OrderScreen extends React.Component {
             tabStyle={{backgroundColor: '#ee7739'}}
             activeTabStyle={{backgroundColor: '#ee7739'}}
             activeTextStyle={{fontWeight: 'bold', color: 'white'}}>
-            <Accordion
-              dataArray={this.state.currentCart}
-              animation={true}
-              expanded={true}
-              renderHeader={this._renderHeaderCurrentCart}
-              renderContent={this._renderContentCurrentCart}
-            />
-            {/* <FlatList
+            <FlatList
               style={styles.tabContainer}
               data={this.state.currentCart}
               showsVerticalScrollIndicator={false}
               numColumns={1}
               keyExtractor={(item, index) => index.toString()}
-              renderItem={(item,index) => {                
-                
-                for (let j = 0; j < item.foods.length; j++) {
-                  // if (
-                  //   this.state.currentOrder.foods.food[j].retailPrice == 0
-                  // ) {
-                  //   totalPrice +=
-                  //     this.state.currentOrder.foods.food[j].originPrice *
-                  //     this.state.currentOrder.foods.food[j].quantity;
-                  //   console.log(totalPrice);
-                  // } else {
-                  //   totalPrice +=
-                  //     this.state.currentOrder.foods.food[j].retailPrice *
-                  //     this.state.currentOrder.foods.food[j].quantity;
-                  //   console.log('TOTAL:  ' + totalPrice);
-                  // }
-                }
+              renderItem={({item, index}) => {
                 return (
-                  <TouchableOpacity style={styles.card}>
-                    <FontAwesome5 name="clock" solid style={styles.icon} />
+                  <TouchableOpacity
+                    style={{
+                      borderWidth: 1,
+                      borderRadius: 8,
+                      borderColor: '#e4e4e4',
+                      flexDirection: 'row',
+                      paddingVertical: 4,
+                      paddingLeft: 8,
+                      paddingRight: 30,
+                    }}
+                    key={index}>
+                    <FontAwesome5
+                      name="clock"
+                      solid
+                      style={{
+                        fontSize: 14,
+                        color: '#5bb8ea',
+                        marginRight: 6,
+                        marginTop: 4,
+                      }}
+                    />
                     <View>
                       <Text
                         style={{
-                          fontSize: 18,
+                          fontSize: 16,
                           marginBottom: 4,
+
+                          fontWeight: '600',
                         }}
                         numberOfLines={1}
                         ellipsizeMode="tail">
-                        {mappedName}
+                        {item.foodStallName}
                       </Text>
-                      <Text
-                        style={{
-                          color: '#5bb8ea',
-                          fontWeight: 'bold',
-                          marginBottom: 4,
-                          fontSize: 16,
+                      <FlatList
+                        style={styles.tabContainer}
+                        data={item.cartItems}
+                        showsVerticalScrollIndicator={false}
+                        numColumns={1}
+                        keyExtractor={(item, index) => index.toString()}
+                        renderItem={({item, index}) => {
+                          return (
+                            <View
+                              style={{
+                                borderWidth: 1,
+                                borderRadius: 15,
+                                borderColor: '#e4e4e4',
+                                paddingVertical: 4,
+                                paddingLeft: 25,
+                                paddingRight: 30,
+                              }}>
+                              <View style={{flexDirection: 'row'}}>
+                                <Text style={{marginRight: 'auto'}}>
+                                  {item.foodName}
+                                </Text>
+                                <Text style={{marginLeft: 'auto'}}>
+                                  {item.quantity}
+                                </Text>
+                              </View>
+                              <View style={{flexDirection: 'row'}}>
+                                <Text style={{marginLeft: 'auto'}}>
+                                  {item.purchasedPrice}
+                                </Text>
+                                {item.cartStatus === 'DELIVERY' && (
+                                  <View style={{marginRight: 'auto'}}>
+                                    <FontAwesome5
+                                      name="check-circle"
+                                      solid
+                                      style={{
+                                        fontSize: 18,
+                                        color: 'green',
+                                        marginRight: 6,
+                                      }}
+                                    />
+                                    <Text
+                                      style={{
+                                        marginRight: 'auto',
+                                        marginBottom: 4,
+                                        fontSize: 14,
+                                        color: 'green',
+                                      }}>
+                                      Delivery
+                                    </Text>
+                                  </View>
+                                )}
+                                {item.cartStatus === 'INPROGRESS' && (
+                                  <View style={{marginRight: 'auto'}}>
+                                    <FontAwesome5
+                                      name="check-circle"
+                                      solid
+                                      style={{
+                                        fontSize: 18,
+                                        color: 'blue',
+                                        marginRight: 6,
+                                      }}
+                                    />
+                                    <Text
+                                      style={{
+                                        marginRight: 'auto',
+                                        marginBottom: 4,
+                                        fontSize: 14,
+                                        color: 'blue',
+                                      }}>
+                                      Preparing
+                                    </Text>
+                                  </View>
+                                )}
+                                {item.cartStatus === 'QUEUE' && (
+                                  <View style={{marginRight: 'auto'}}>
+                                    <FontAwesome5
+                                      name="check-circle"
+                                      solid
+                                      style={{
+                                        fontSize: 18,
+                                        color: 'grey',
+                                        marginRight: 6,
+                                      }}
+                                    />
+                                    <Text
+                                      style={{
+                                        marginRight: 'auto',
+                                        marginBottom: 4,
+                                        fontSize: 14,
+                                        color: 'grey',
+                                      }}>
+                                      Queue
+                                    </Text>
+                                  </View>
+                                )}
+                                {item.cartStatus === 'READY' && (
+                                  <View style={{marginRight: 'auto'}}>
+                                    <FontAwesome5
+                                      name="check-circle"
+                                      solid
+                                      style={{
+                                        fontSize: 18,
+                                        color: 'yellow',
+                                        marginRight: 6,
+                                      }}
+                                    />
+                                    <Text
+                                      style={{
+                                        marginRight: 'auto',
+                                        marginBottom: 4,
+                                        fontSize: 14,
+                                        color: 'yellow',
+                                      }}>
+                                      Ready
+                                    </Text>
+                                  </View>
+                                )}
+                              </View>
+                            </View>
+                          );
                         }}
                       />
-                      <Text style={{fontStyle: 'italic'}}>{totalPrice}đ</Text>
                     </View>
                   </TouchableOpacity>
                 );
               }}
-            /> */}
+            />
           </Tab>
           <Tab
             heading="Order History"
@@ -540,7 +534,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   tabContainer: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     paddingTop: 12,
   },
   card: {

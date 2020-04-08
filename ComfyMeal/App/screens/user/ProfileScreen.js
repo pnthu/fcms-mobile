@@ -104,12 +104,19 @@ class ProfileScreen extends React.Component {
                 )
                   .then(Response => Response.json())
                   .then(wallet => {
-                    this.state.customerWallet = {
-                      walletId: wallet.id,
-                      walletBalance: wallet.balances,
-                      qrCode: wallet.qrCode,
-                    };
+                    this.setState({
+                      customerWallet: {
+                        walletId: wallet.id,
+                        walletBalance: wallet.balances,
+                        qrCode: wallet.qrCode,
+                      },
+                    });
                     console.log(this.state.customerWallet);
+                    // AsyncStorage.removeItem('customer-wallet');
+                    // AsyncStorage.setItem(
+                    //   'customer-wallet',
+                    //   JSON.stringify(this.state.customerWallet),
+                    // );
                   })
                   .catch(error => {
                     console.log(error);
