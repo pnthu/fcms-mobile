@@ -19,20 +19,27 @@ class CartScreen extends React.Component {
     };
   }
 
-  // mapFsName = () => {
-  //   for (let i = 0; i < data.length; i++) {
-  //     if (this.state.cart.length === 0) {
-  //       this.state.cart.push(data[i].fsId);
-  //     } else {
-  //       for (let j = 0; j < this.state.cart.length; j++) {
-  //         if (this.state.cart[j].fsId === data[i].fsId) {
-  //           break;
-  //         }
-  //       }
-  //       this.state.cart.push(data[i].fsId)
-  //     }
-  //   }
-  // }
+  mapFsName = () => {
+    var fsName = [];
+    for (let i = 0; i < this.state.cart.length; i++) {
+      if (fsName.length === 0) {
+        fsName.push(this.state.cart[i].foodStall.foodStallName);
+      } else {
+        for (let j = 0; j < fsName.length; j++) {
+          if (
+            this.state.cart[i].foodStall.foodStallId !== fsName[j] &&
+            j === fsName.length - 1
+          ) {
+            fsName.push(this.state.cart[i].foodStall.foodStallName);
+          }
+        }
+      }
+    }
+  };
+
+  mapToShow = () => {};
+
+  mapToOrder = () => {};
 
   componentDidMount = async () => {
     this.backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -45,6 +52,7 @@ class CartScreen extends React.Component {
   };
 
   render() {
+    console.log('cart', this.state.cart);
     return (
       <View style={styles.container}>
         <View style={styles.tabBar}>

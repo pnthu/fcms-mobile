@@ -35,6 +35,13 @@ class StallDetailScreen extends React.Component {
       this.props.navigation.goBack();
       return true;
     });
+    try {
+      const response = await AsyncStorage.getItem('cart');
+      const cart = JSON.parse(response);
+      cart && this.setState({cart: cart});
+    } catch (error) {
+      console.log('Something was wrong, ', error);
+    }
     fetch(
       'http://foodcout.ap-southeast-1.elasticbeanstalk.com/food-stall/' +
         JSON.stringify(this.props.navigation.state.params.foodstall) +
@@ -73,61 +80,24 @@ class StallDetailScreen extends React.Component {
           for (let i = 0; i < menu.length; i++) {
             menu[i].quantity = 0;
           }
+          if (!!this.state.cart && this.state.cart.length !== 0) {
+            for (let i = 0; i < menu.length; i++) {
+              if (this.state.cart instanceof Array) {
+                for (let j = 0; j < this.state.cart.length; j++) {
+                  if (menu[i].id === this.state.cart[j].id) {
+                    menu[i].quantity += 1;
+                  }
+                }
+              }
+            }
+          }
         }
         this.setState({foodStallMenu: menu});
       })
       .catch(error => {
         console.log(error);
       });
-
-    try {
-      const response = await AsyncStorage.getItem('cart');
-      const cart = JSON.parse(response);
-      cart && this.setState({cart: cart});
-      // cart && console.log('async cart', JSON.stringify(this.state.cart));
-    } catch (error) {
-      console.log('Something was wrong, ', error);
-    }
-
-    if (!!this.state.cart && this.state.cart.length !== 0) {
-      console.log('co cart');
-      for (let i = 0; i < this.state.foodStallMenu.length; i++) {
-        console.log('id', this.state.foodStallMenu[i].id);
-        if (this.state.cart instanceof Array) {
-          console.log('cart la mang');
-          for (let j = 0; j < this.state.cart.length; j++) {
-            console.log(
-              'equal',
-              this.state.foodStallMenu[i].id === this.state.cart[j].id,
-            );
-            if (this.state.foodStallMenu[i].id === this.state.cart[j].id) {
-              console.log('ahihi');
-              const newMenu = this.state.foodStallMenu;
-              newMenu[i].quantity += 1;
-              this.setState({foodStallMenu: newMenu});
-            }
-          }
-        }
-      }
-    }
-    this.forceUpdate();
   };
-
-  // componentDidUpdate = () => {
-  //   var newMenu = this.state.foodStallMenu;
-  //   if (!!this.state.cart && this.state.cart.length !== 0) {
-  //     for (let i = 0; i < this.state.foodStallMenu.length; i++) {
-  //       if (this.state.cart instanceof Array) {
-  //         for (let j = 0; j < this.state.cart.length; j++) {
-  //           if (this.state.foodStallMenu[i].id === this.state.cart[j].id) {
-  //             newMenu[i].quantity += 1;
-  //           }
-  //         }
-  //       }
-  //     }
-  //     this.setState({foodStallMenu: newMenu});
-  //   }
-  // };
 
   addToCart = async food => {
     if (this.state.cart === null) {
@@ -151,6 +121,28 @@ class StallDetailScreen extends React.Component {
       }
       this.setState({foodStallMenu: currentMenu});
     }
+  };
+
+  removeFromCart = async food => {
+    const currentCart = this.state.cart;
+    if (currentCart instanceof Array) {
+      for (let i = 0; i < currentCart.length; i++) {
+        if (currentCart[i].id === food.id) {
+          currentCart.splice(i, 1);
+          break;
+        }
+      }
+      this.setState({cart: currentCart});
+      await AsyncStorage.setItem('cart', JSON.stringify(this.state.cart));
+    }
+    const currentMenu = this.state.foodStallMenu;
+    for (let i = 0; i < currentMenu.length; i++) {
+      if (currentMenu[i].id === food.id) {
+        currentMenu[i].quantity -= 1;
+        break;
+      }
+    }
+    this.setState({foodStallMenu: currentMenu});
   };
 
   onNavigateToCart = async () => {
@@ -217,10 +209,7 @@ class StallDetailScreen extends React.Component {
             showsVerticalScrollIndicator={false}
             numColumns={1}
             renderItem={({item, index}) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() => this.addToCart(item)}
-                style={styles.foodCard}>
+              <View key={index} style={styles.foodCard}>
                 <Image source={{uri: item.foodImage}} style={styles.foodImg} />
                 <View>
                   <Text
@@ -257,16 +246,24 @@ class StallDetailScreen extends React.Component {
                     </>
                   )}
                 </View>
-                <View>
+                <View style={styles.itemQuantity}>
                   {item.quantity === 0 || (
                     <>
-                      <FontAwesome5 name="minus-circle" />
-                      <Text>{item.quantity}</Text>
+                      <FontAwesome5
+                        name="minus-circle"
+                        onPress={() => this.removeFromCart(item)}
+                        style={styles.btnAddRemove}
+                      />
+                      <Text style={{fontSize: 17}}>{item.quantity}</Text>
                     </>
                   )}
-                  <FontAwesome5 name="plus-circle" />
+                  <FontAwesome5
+                    name="plus-circle"
+                    onPress={() => this.addToCart(item)}
+                    style={styles.btnAddRemove}
+                  />
                 </View>
-              </TouchableOpacity>
+              </View>
             )}
             keyExtractor={(item, index) => index.toString()}
           />
@@ -321,11 +318,8 @@ const styles = StyleSheet.create({
     height: 100,
     marginRight: 12,
   },
-  btnAdd: {
-    position: 'absolute',
-    bottom: 12,
-    right: 0,
-    fontSize: 22,
+  btnAddRemove: {
+    fontSize: 20,
     color: '#4a6572',
   },
   btnCart: {
@@ -353,6 +347,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     textAlignVertical: 'center',
     fontWeight: 'bold',
+  },
+  itemQuantity: {
+    position: 'absolute',
+    bottom: 12,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '40%',
+    justifyContent: 'space-between',
   },
 });
 
