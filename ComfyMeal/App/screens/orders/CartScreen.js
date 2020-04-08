@@ -57,7 +57,6 @@ class CartScreen extends React.Component {
   };
 
   render() {
-    console.log('cart', this.state.cart);
     return (
       <View style={styles.container}>
         <View style={styles.tabBar}>
@@ -80,16 +79,60 @@ class CartScreen extends React.Component {
           renderItem={({item, index}) => {
             return (
               <View key={index}>
-                <Text
+                <View style={styles.foodCard}>
+                  <Image
+                    source={{uri: item.foodImage}}
+                    style={styles.foodImg}
+                  />
+                  <View>
+                    <Text
+                      style={{
+                        fontSize: 20,
+                        fontWeight: 'bold',
+                        marginBottom: 4,
+                      }}>
+                      {item.foodName}
+                    </Text>
+                    <Text
+                      style={{
+                        color: '#808080',
+                        fontWeight: '200',
+                        marginBottom: 4,
+                      }}>
+                      {item.foodDescription}
+                    </Text>
+                    {item.retailPrice == 0 ? (
+                      <Text>{item.originPrice}đ</Text>
+                    ) : (
+                      <>
+                        <Text
+                          style={{
+                            textDecorationLine: 'line-through',
+                            textDecorationStyle: 'solid',
+                          }}>
+                          {item.originPrice}đ
+                        </Text>
+                        <Text
+                          style={{
+                            color: 'red',
+                          }}>
+                          {item.retailPrice}đ
+                        </Text>
+                      </>
+                    )}
+                  </View>
+                  <FontAwesome5 name="plus-circle" style={styles.btnAdd} />
+                </View>
+                {/* <Text
                   style={{
                     textAlign: 'center',
                     fontSize: 20,
                     fontWeight: 'bold',
                   }}>
-                  {item.foodStallName}
-                </Text>
-                <FlatList
-                  data={item.foods}
+                  {item.foodStall.foodStallName}
+                </Text> */}
+                {/* <FlatList
+                  data={item}
                   showsVerticalScrollIndicator={false}
                   scrollEnabled={false}
                   numColumns={1}
@@ -97,59 +140,52 @@ class CartScreen extends React.Component {
                   renderItem={({item, index}) => {
                     return (
                       <View style={styles.foodCard}>
-                        <Image
-                          source={{uri: item.food.foodImage}}
-                          style={styles.foodImg}
-                        />
-                        <View>
-                          <Text
-                            style={{
-                              fontSize: 20,
-                              fontWeight: 'bold',
-                              marginBottom: 4,
-                            }}>
-                            {item.food.foodName}
-                          </Text>
-                          <Text
-                            style={{
-                              color: '#808080',
-                              fontWeight: '200',
-                              marginBottom: 4,
-                            }}>
-                            {item.foodDescription}
-                          </Text>
-                          {item.food.retailPrice == 0 ? (
-                            <Text>{item.food.originPrice}đ</Text>
-                          ) : (
-                            <>
-                              <Text
-                                style={{
-                                  textDecorationLine: 'line-through',
-                                  textDecorationStyle: 'solid',
-                                }}>
-                                {item.food.originPrice}đ
-                              </Text>
-                              <Text
-                                style={{
-                                  color: 'red',
-                                }}>
-                                {item.food.retailPrice}đ
-                              </Text>
-                            </>
-                          )}
-                        </View>
-                        {/* <FontAwesome5
-                          name="minus-circle"
-                          style={styles.btnAdd}
-                        /> */}
-                        <FontAwesome5
-                          name="plus-circle"
-                          style={styles.btnAdd}
-                        />
-                      </View>
+                  <Image
+                    source={{uri: item.food.foodImage}}
+                    style={styles.foodImg}
+                  />
+                  <View>
+                    <Text
+                      style={{
+                        fontSize: 20,
+                        fontWeight: 'bold',
+                        marginBottom: 4,
+                      }}>
+                      {item.food.foodName}
+                    </Text>
+                    <Text
+                      style={{
+                        color: '#808080',
+                        fontWeight: '200',
+                        marginBottom: 4,
+                      }}>
+                      {item.foodDescription}
+                    </Text>
+                    {item.food.retailPrice == 0 ? (
+                      <Text>{item.food.originPrice}đ</Text>
+                    ) : (
+                      <>
+                        <Text
+                          style={{
+                            textDecorationLine: 'line-through',
+                            textDecorationStyle: 'solid',
+                          }}>
+                          {item.food.originPrice}đ
+                        </Text>
+                        <Text
+                          style={{
+                            color: 'red',
+                          }}>
+                          {item.food.retailPrice}đ
+                        </Text>
+                      </>
+                    )}
+                  </View>
+                  <FontAwesome5 name="plus-circle" style={styles.btnAdd} />
+                </View>
                     );
                   }}
-                />
+                /> */}
               </View>
             );
           }}
@@ -157,7 +193,6 @@ class CartScreen extends React.Component {
         <TouchableOpacity
           onPress={() => {
             this.state.cart.map((c, index) => {
-              c.foods.map((food, index) => {
                 this.state.itemList.push({
                   foodId: food.food.id,
                   quantity: food.quantity,
