@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import AsyncStorage from '@react-native-community/async-storage';
-import {TextInput} from 'react-native-gesture-handler';
 
 class CartScreen extends React.Component {
   constructor(props) {
@@ -19,26 +18,55 @@ class CartScreen extends React.Component {
       cart: [],
       itemList: [],
       cartDto: {walletId: 0, cartItems: []},
+      fsName: [],
     };
   }
 
-  mapFsName = () => {
-    var fsName = [];
-    for (let i = 0; i < this.state.cart.length; i++) {
-      if (fsName.length === 0) {
-        fsName.push(this.state.cart[i].foodStall.foodStallName);
-      } else {
-        for (let j = 0; j < fsName.length; j++) {
-          if (
-            this.state.cart[i].foodStall.foodStallId !== fsName[j] &&
-            j === fsName.length - 1
-          ) {
-            fsName.push(this.state.cart[i].foodStall.foodStallName);
-          }
-        }
-      }
-    }
-  };
+  // addToCart = async food => {
+  //   if (this.state.cart === null) {
+  //     ToastAndroid.show('Please login to order our food.', ToastAndroid.SHORT);
+  //     this.props.navigation.navigate('ProfileTab', {
+  //       foodstall: this.props.navigation.state.params.foodstall,
+  //     });
+  //   } else {
+  //     const currentCart = this.state.cart;
+  //     if (currentCart instanceof Array) {
+  //       currentCart.push(food);
+  //       this.setState({cart: currentCart});
+  //       await AsyncStorage.setItem('cart', JSON.stringify(this.state.cart));
+  //     }
+  //     const currentMenu = this.state.foodStallMenu;
+  //     for (let i = 0; i < currentMenu.length; i++) {
+  //       if (currentMenu[i].id === food.id) {
+  //         currentMenu[i].quantity += 1;
+  //         break;
+  //       }
+  //     }
+  //     this.setState({foodStallMenu: currentMenu});
+  //   }
+  // };
+
+  // removeFromCart = async food => {
+  //   const currentCart = this.state.cart;
+  //   if (currentCart instanceof Array) {
+  //     for (let i = 0; i < currentCart.length; i++) {
+  //       if (currentCart[i].id === food.id) {
+  //         currentCart.splice(i, 1);
+  //         break;
+  //       }
+  //     }
+  //     this.setState({cart: currentCart});
+  //     await AsyncStorage.setItem('cart', JSON.stringify(this.state.cart));
+  //   }
+  //   const currentMenu = this.state.foodStallMenu;
+  //   for (let i = 0; i < currentMenu.length; i++) {
+  //     if (currentMenu[i].id === food.id) {
+  //       currentMenu[i].quantity -= 1;
+  //       break;
+  //     }
+  //   }
+  //   this.setState({foodStallMenu: currentMenu});
+  // };
 
   mapToShow = () => {};
 
@@ -54,9 +82,11 @@ class CartScreen extends React.Component {
     this.setState({cart: cart});
     const wallet = JSON.parse(await AsyncStorage.getItem('customer-wallet'));
     this.state.cartDto.walletId = wallet.walletId;
+    this.mapToShow();
   };
 
   render() {
+    console.log('cart', this.state.cart);
     return (
       <View style={styles.container}>
         <View style={styles.tabBar}>
@@ -193,13 +223,13 @@ class CartScreen extends React.Component {
         <TouchableOpacity
           onPress={() => {
             this.state.cart.map((c, index) => {
-                this.state.itemList.push({
-                  foodId: food.food.id,
-                  quantity: food.quantity,
-                  note: '',
-                });
+              this.state.itemList.push({
+                foodId: c.id,
+                quantity: c.quantity,
+                note: '',
               });
             });
+
             this.state.cartDto.cartItems = this.state.itemList;
             console.log(this.state.cartDto);
             fetch(
@@ -214,10 +244,10 @@ class CartScreen extends React.Component {
               },
             );
 
-            AsyncStorage.setItem(
-              'current-order',
-              JSON.stringify(this.state.cart),
-            );
+            // AsyncStorage.setItem(
+            //   'current-order',
+            //   JSON.stringify(this.state.cart),
+            // );
             this.props.navigation.navigate('OrderSuccess');
           }}
           style={styles.btnConfirm}>

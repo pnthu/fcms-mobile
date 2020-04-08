@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ToastAndroid,
   Image,
+  ScrollView,
 } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
@@ -69,7 +70,7 @@ class ProfileScreen extends React.Component {
 
   render() {
     return (
-      <View style={styles.container}>
+      <ScrollView style={styles.container}>
         <View style={styles.section}>
           <Text style={styles.title}>My Profile</Text>
           <Image
@@ -151,7 +152,7 @@ class ProfileScreen extends React.Component {
           }}
         />
         <Text style={{textAlign: 'center', marginTop: 15}}>Version 1.0.0</Text>
-      </View>
+      </ScrollView>
     );
   }
 }

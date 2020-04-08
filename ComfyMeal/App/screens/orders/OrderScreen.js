@@ -27,6 +27,7 @@ class OrderScreen extends React.Component {
   }
 
   componentDidMount = async () => {
+    const currentShoppingCart = await AsyncStorage.getItem('cart');
     const currentOrder = JSON.parse(
       await AsyncStorage.getItem('current-order'),
     );
@@ -35,7 +36,10 @@ class OrderScreen extends React.Component {
     const customerWallet = JSON.parse(
       await AsyncStorage.getItem('customer-wallet'),
     );
-    this.setState({walletId: customerWallet.walletId});
+    this.setState({
+      walletId: customerWallet.walletId,
+      shoppingCart: currentShoppingCart,
+    });
 
     fetch(
       'http://foodcout.ap-southeast-1.elasticbeanstalk.com/cart/' +
@@ -359,6 +363,7 @@ class OrderScreen extends React.Component {
   };
 
   render() {
+    console.log('cart', this.state.shoppingCart);
     return (
       <View style={styles.container}>
         <Tabs
