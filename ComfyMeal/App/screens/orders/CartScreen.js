@@ -68,7 +68,29 @@ class CartScreen extends React.Component {
   //   this.setState({foodStallMenu: currentMenu});
   // };
 
-  mapToShow = () => {};
+  mapToShow = () => {
+    //tach ra
+    const copyCart = this.state.cart;
+    var mappedCart = [];
+    for (let i = 0; i < copyCart.length; i++) {
+      if (mappedCart.length === 0) {
+        copyCart[i].quantity = 1;
+        mappedCart.push(copyCart[i]);
+      } else {
+        for (let j = 0; j < mappedCart.length; j++) {
+          if (copyCart[i].id === mappedCart[j].id) {
+            mappedCart[j].quantity += 1;
+            break;
+          } else if (j === mappedCart.length - 1) {
+            copyCart[i].quantity = 1;
+            mappedCart.push(copyCart[i]);
+            break;
+          }
+        }
+      }
+    }
+    this.setState({cart: mappedCart});
+  };
 
   mapToOrder = () => {};
 
@@ -151,7 +173,23 @@ class CartScreen extends React.Component {
                       </>
                     )}
                   </View>
-                  <FontAwesome5 name="plus-circle" style={styles.btnAdd} />
+                  <View style={styles.itemQuantity}>
+                    {item.quantity === 0 || (
+                      <>
+                        <FontAwesome5
+                          name="minus-circle"
+                          onPress={() => this.removeFromCart(item)}
+                          style={styles.btnAddRemove}
+                        />
+                        <Text style={{fontSize: 17}}>{item.quantity}</Text>
+                      </>
+                    )}
+                    <FontAwesome5
+                      name="plus-circle"
+                      onPress={() => this.addToCart(item)}
+                      style={styles.btnAddRemove}
+                    />
+                  </View>
                 </View>
                 {/* <Text
                   style={{
@@ -320,6 +358,19 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     marginBottom: 24,
     marginTop: 12,
+  },
+  itemQuantity: {
+    position: 'absolute',
+    bottom: 12,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '40%',
+    justifyContent: 'space-between',
+  },
+  btnAddRemove: {
+    fontSize: 20,
+    color: '#4a6572',
   },
 });
 
