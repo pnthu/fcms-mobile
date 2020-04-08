@@ -10,12 +10,15 @@ import {
 } from 'react-native';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import AsyncStorage from '@react-native-community/async-storage';
+import {TextInput} from 'react-native-gesture-handler';
 
 class CartScreen extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       cart: [],
+      itemList: [],
+      cartDto: {walletId: 0, cartItems: []},
     };
   }
 
@@ -49,6 +52,8 @@ class CartScreen extends React.Component {
     const response = await AsyncStorage.getItem('cart');
     const cart = JSON.parse(response);
     this.setState({cart: cart});
+    const wallet = JSON.parse(await AsyncStorage.getItem('customer-wallet'));
+    this.state.cartDto.walletId = wallet.walletId;
   };
 
   render() {
@@ -75,7 +80,14 @@ class CartScreen extends React.Component {
           renderItem={({item, index}) => {
             return (
               <View key={index}>
-                <Text>{item.foodStallName}</Text>
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    fontSize: 20,
+                    fontWeight: 'bold',
+                  }}>
+                  {item.foodStallName}
+                </Text>
                 <FlatList
                   data={item.foods}
                   showsVerticalScrollIndicator={false}
@@ -106,8 +118,30 @@ class CartScreen extends React.Component {
                             }}>
                             {item.foodDescription}
                           </Text>
-                          <Text>{item.food.originPrice}đ</Text>
+                          {item.food.retailPrice == 0 ? (
+                            <Text>{item.food.originPrice}đ</Text>
+                          ) : (
+                            <>
+                              <Text
+                                style={{
+                                  textDecorationLine: 'line-through',
+                                  textDecorationStyle: 'solid',
+                                }}>
+                                {item.food.originPrice}đ
+                              </Text>
+                              <Text
+                                style={{
+                                  color: 'red',
+                                }}>
+                                {item.food.retailPrice}đ
+                              </Text>
+                            </>
+                          )}
                         </View>
+                        {/* <FontAwesome5
+                          name="minus-circle"
+                          style={styles.btnAdd}
+                        /> */}
                         <FontAwesome5
                           name="plus-circle"
                           style={styles.btnAdd}
@@ -121,8 +155,37 @@ class CartScreen extends React.Component {
           }}
         />
         <TouchableOpacity
-          style={styles.btnConfirm}
-          onPress={() => this.props.navigation.navigate('OrderSuccess')}>
+          onPress={() => {
+            this.state.cart.map((c, index) => {
+              c.foods.map((food, index) => {
+                this.state.itemList.push({
+                  foodId: food.food.id,
+                  quantity: food.quantity,
+                  note: '',
+                });
+              });
+            });
+            this.state.cartDto.cartItems = this.state.itemList;
+            console.log(this.state.cartDto);
+            fetch(
+              'http://foodcout.ap-southeast-1.elasticbeanstalk.com/cart/order',
+              {
+                method: 'POST',
+                headers: {
+                  Accept: 'application/json',
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(this.state.cartDto),
+              },
+            );
+
+            AsyncStorage.setItem(
+              'current-order',
+              JSON.stringify(this.state.cart),
+            );
+            this.props.navigation.navigate('OrderSuccess');
+          }}
+          style={styles.btnConfirm}>
           <Text
             style={{
               textAlign: 'center',
@@ -158,10 +221,18 @@ const styles = StyleSheet.create({
   },
   header: {},
   foodCard: {
+    borderWidth: 1,
+    borderRadius: 10,
+    borderColor: '#e4e4e4',
+    paddingVertical: 4,
+    marginTop: 5,
+    marginBottom: 5,
+    paddingLeft: 8,
+    paddingRight: 30,
     flexDirection: 'row',
-    borderTopWidth: 1,
-    borderColor: '#dadada',
-    paddingVertical: 12,
+    // borderTopWidth: 1,
+    // borderColor: '#dadada',
+    // paddingVertical: 12,
   },
   foodImg: {
     width: 100,

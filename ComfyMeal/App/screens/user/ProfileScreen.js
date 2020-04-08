@@ -17,7 +17,7 @@ class ProfileScreen extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      customerWallet: {walletId: 0, walletBalance: 0},
+      customerWallet: {walletId: 0, walletBalance: 0, qrCode: ''},
       userInfo: {},
       provider: {},
     };
@@ -50,12 +50,14 @@ class ProfileScreen extends React.Component {
       const userInfo = JSON.parse(response);
       const provider = JSON.parse(await AsyncStorage.getItem('provider'));
       const wallet = JSON.parse(await AsyncStorage.getItem('customer-wallet'));
+      console.log(JSON.stringify(wallet));
       this.setState({
         userInfo: userInfo,
         provider: provider,
         customerWallet: {
           walletId: wallet.walletId,
           walletBalance: wallet.walletBalance,
+          qrCode: wallet.qrCode,
         },
       });
       console.log('user', userInfo);
@@ -83,9 +85,46 @@ class ProfileScreen extends React.Component {
           </View>
           <View style={styles.row}>
             <FontAwesome5 name="wallet" color="white" style={styles.icon} />
-            <Text>
+            <Text style={{marginRight: 'auto'}}>
               Your wallet balance: {this.state.customerWallet.walletBalance}
             </Text>
+            <TouchableOpacity
+              onPress={() => {
+                fetch(
+                  'http://foodcout.ap-southeast-1.elasticbeanstalk.com/customer/wallet/' +
+                    this.state.customerWallet.walletId,
+                  {
+                    method: 'GET',
+                    headers: {
+                      Accept: 'application/json',
+                      'Content-Type': 'application/json',
+                    },
+                  },
+                )
+                  .then(Response => Response.json())
+                  .then(wallet => {
+                    this.state.customerWallet = {
+                      walletId: wallet.id,
+                      walletBalance: wallet.balances,
+                      qrCode: wallet.qrCode,
+                    };
+                    console.log(this.state.customerWallet);
+                  })
+                  .catch(error => {
+                    console.log(error);
+                  });
+              }}>
+              <Text
+                style={{
+                  borderWidth: 1,
+                  padding: 10,
+                  marginLeft: 'auto',
+                  borderRadius: 10,
+                  borderColor: '#e4e4e4',
+                }}>
+                Refresh
+              </Text>
+            </TouchableOpacity>
           </View>
           <TouchableOpacity style={styles.row} onPress={this.logout}>
             <FontAwesome5
@@ -96,7 +135,22 @@ class ProfileScreen extends React.Component {
             <Text>Logout</Text>
           </TouchableOpacity>
         </View>
-        <Text style={{textAlign: 'center', marginTop: 200}}>Version 1.0.0</Text>
+        <Text style={{textAlign: 'center', marginBottom: 5}}>
+          Customer Wallet ID: {this.state.customerWallet.walletId}
+        </Text>
+        <Image
+          style={{
+            width: '80%',
+            borderRadius: 4,
+            height: 300,
+            marginLeft: 'auto',
+            marginRight: 'auto',
+          }}
+          source={{
+            uri: this.state.customerWallet.qrCode,
+          }}
+        />
+        <Text style={{textAlign: 'center', marginTop: 15}}>Version 1.0.0</Text>
       </View>
     );
   }
