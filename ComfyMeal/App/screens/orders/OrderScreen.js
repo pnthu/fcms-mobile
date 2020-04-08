@@ -22,6 +22,7 @@ class OrderScreen extends React.Component {
       historyOrderDetail: [],
       walletId: 0,
       currentOrder: [],
+      currentCart: [],
     };
   }
 
@@ -37,8 +38,9 @@ class OrderScreen extends React.Component {
     this.setState({walletId: customerWallet.walletId});
 
     fetch(
-      'http://foodcout.ap-southeast-1.elasticbeanstalk.com/cart/history/' +
-        this.state.walletId,
+      'http://foodcout.ap-southeast-1.elasticbeanstalk.com/cart/' +
+        this.state.walletId +
+        '/history',
       {
         method: 'GET',
         headers: {
@@ -50,6 +52,26 @@ class OrderScreen extends React.Component {
       .then(Response => Response.json())
       .then(history => {
         this.setState({historyOrder: history});
+      })
+      .catch(error => {
+        console.log(error);
+      });
+
+    fetch(
+      'http://foodcout.ap-southeast-1.elasticbeanstalk.com/cart/' +
+        this.state.walletId +
+        '/in-progress/detail',
+      {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      },
+    )
+      .then(Response => Response.json())
+      .then(currentOrder => {
+        this.setState({currentCart: currentOrder});
       })
       .catch(error => {
         console.log(error);
@@ -91,7 +113,7 @@ class OrderScreen extends React.Component {
               style={{
                 marginRight: 'auto',
                 marginBottom: 4,
-                fontSize: 16,
+                fontSize: 14,
                 color: 'red',
               }}>
               {item.cartStatus}
@@ -118,7 +140,7 @@ class OrderScreen extends React.Component {
               style={{
                 marginRight: 'auto',
                 marginBottom: 4,
-                fontSize: 16,
+                fontSize: 14,
                 color: 'green',
               }}>
               {item.cartStatus}
@@ -145,7 +167,7 @@ class OrderScreen extends React.Component {
               style={{
                 marginRight: 'auto',
                 marginBottom: 4,
-                fontSize: 16,
+                fontSize: 14,
                 color: 'blue',
               }}>
               {item.cartStatus}
@@ -219,6 +241,123 @@ class OrderScreen extends React.Component {
     );
   };
 
+  _renderContentCurrentCart = item => {
+    return (
+      <>
+        {this.state.currentCart.cartItems instanceof Array &&
+          this.state.currentCart.cartItems.map((cartItems, index) => {
+            console.log(JSON.stringify(this.state.currentCart.cartItems.id));
+            console.log(JSON.stringify(cartItems));
+            return (
+              <View
+                key={index}
+                style={{
+                  borderWidth: 1,
+                  borderRadius: 15,
+                  borderColor: '#e4e4e4',
+                  paddingVertical: 4,
+                  paddingLeft: 25,
+                  paddingRight: 30,
+                }}>
+                <View style={{flexDirection: 'row'}}>
+                  <Text style={{fontSize: 13, fontWeight: '600'}}>
+                    Total Price: {cartItems.purchasedPrice}đ
+                  </Text>
+                  <Text
+                    style={{
+                      marginLeft: 'auto',
+                      fontSize: 13,
+                      fontWeight: '600',
+                    }}>
+                    Quantity: {cartItems.quantity}
+                  </Text>
+                </View>
+                <Text style={{fontSize: 13, fontWeight: '600'}}>
+                  Purchase: {cartItems.foodName} at {cartItems.foodStallName}
+                </Text>
+              </View>
+            );
+          })}
+      </>
+    );
+  };
+
+  _renderHeaderCurrentCart = (item, expanded) => {
+    return (
+      <View
+        style={{
+          borderWidth: 1,
+          borderRadius: 10,
+          borderColor: '#e4e4e4',
+          paddingVertical: 4,
+          marginTop: 5,
+          marginBottom: 5,
+          paddingLeft: 8,
+          paddingRight: 30,
+        }}>
+        <View style={{flexDirection: 'row'}}>
+          <Text style={{fontWeight: '600', marginLeft: 'auto', fontSize: 14}}>
+            Total Price: {item.totalPrice}
+          </Text>
+        </View>
+        {item.cartStatus === 'PENDING' && (
+          <View style={{flexDirection: 'row'}}>
+            <FontAwesome5
+              name="check-circle"
+              solid
+              style={{
+                fontSize: 18,
+                color: 'grey',
+                marginRight: 6,
+              }}
+            />
+            <Text
+              style={{
+                marginRight: 'auto',
+                marginBottom: 4,
+                fontSize: 14,
+                color: 'grey',
+              }}>
+              {item.cartStatus}
+            </Text>
+            {expanded ? (
+              <FontAwesome5 style={{fontSize: 18}} name="angle-down" />
+            ) : (
+              <FontAwesome5 style={{fontSize: 18}} name="angle-up" />
+            )}
+          </View>
+        )}
+        {item.cartStatus === 'INPROGRESS' && (
+          <View style={{flexDirection: 'row'}}>
+            <FontAwesome5
+              name="check-circle"
+              solid
+              style={{
+                fontSize: 18,
+                color: 'blue',
+                marginRight: 6,
+              }}
+            />
+            <Text
+              style={{
+                marginRight: 'auto',
+                marginBottom: 4,
+                fontSize: 14,
+                color: 'blue',
+              }}>
+              {item.cartStatus}
+            </Text>
+            {expanded ? (
+              <FontAwesome5 style={{fontSize: 18}} name="angle-down" />
+            ) : (
+              <FontAwesome5 style={{fontSize: 18}} name="angle-up" />
+            )}
+          </View>
+        )}
+      </View>
+    );
+  };
+
   render() {
     return (
       <View style={styles.container}>
@@ -230,20 +369,21 @@ class OrderScreen extends React.Component {
             tabStyle={{backgroundColor: '#ee7739'}}
             activeTabStyle={{backgroundColor: '#ee7739'}}
             activeTextStyle={{fontWeight: 'bold', color: 'white'}}>
-            <FlatList
+            <Accordion
+              dataArray={this.state.currentCart}
+              animation={true}
+              expanded={true}
+              renderHeader={this._renderHeaderCurrentCart}
+              renderContent={this._renderContentCurrentCart}
+            />
+            {/* <FlatList
               style={styles.tabContainer}
-              // data={this.state.currentOrder}
+              data={this.state.currentCart}
               showsVerticalScrollIndicator={false}
               numColumns={1}
               keyExtractor={(item, index) => index.toString()}
-              renderItem={() => {
-                var mappedName = '';
-                var totalPrice = 0;
-                for (let i = 0; i < this.state.currentOrder.length; i++) {
-                  mappedName += this.state.currentOrder[i].foodStallName + ', ';
-                }
-                console.log(item.foods.length + 'Length');
-                console.log();
+              renderItem={(item,index) => {                
+                
                 for (let j = 0; j < item.foods.length; j++) {
                   // if (
                   //   this.state.currentOrder.foods.food[j].retailPrice == 0
@@ -285,7 +425,7 @@ class OrderScreen extends React.Component {
                   </TouchableOpacity>
                 );
               }}
-            />
+            /> */}
           </Tab>
           <Tab
             heading="Order History"
