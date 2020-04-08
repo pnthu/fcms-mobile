@@ -92,6 +92,7 @@ class StallDetailScreen extends React.Component {
             }
           }
         }
+        menu.sort((a, b) => a.foodRating < b.foodRating);
         this.setState({foodStallMenu: menu});
       })
       .catch(error => {
@@ -213,9 +214,24 @@ class StallDetailScreen extends React.Component {
                 <Image source={{uri: item.foodImage}} style={styles.foodImg} />
                 <View>
                   <Text
-                    style={{fontSize: 20, fontWeight: 'bold', marginBottom: 4}}>
+                    style={{
+                      fontSize: 20,
+                      fontWeight: 'bold',
+                      marginBottom: 4,
+                      marginRight: 'auto',
+                    }}>
                     {item.foodName}
                   </Text>
+                  <StarRating
+                    disabled
+                    halfStarEnabled
+                    starSize={15}
+                    fullStarColor="#ffdd00"
+                    halfStarColor="#ffdd00"
+                    emptyStarColor="#ffdd00"
+                    rating={item.foodRating}
+                    containerStyle={styles.stars}
+                  />
                   <Text
                     numberOfLines={2}
                     ellipsizeMode="tail"
