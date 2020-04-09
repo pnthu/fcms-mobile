@@ -9,13 +9,14 @@ class OrderSuccessScreen extends React.Component {
     super(props);
     this.state = {
       cart: [],
+      customerWalletId: 0,
     };
   }
 
   componentDidMount = async () => {
     const cart = JSON.parse(await AsyncStorage.getItem('cart'));
-    const customer = JSON.parse(await AsyncStorage.getItem(''));
-    this.setState({cart: cart});
+    const wallet = JSON.parse(await AsyncStorage.getItem('customer-wallet'));
+    this.setState({cart: cart, customerWalletId: wallet.walletId});
   };
 
   render() {
@@ -60,9 +61,9 @@ class OrderSuccessScreen extends React.Component {
                   containerStyle={styles.stars}
                   selectedStar={rating => {
                     fetch(
-                      `http://foodcout.ap-southeast-1.elasticbeanstalk.com/customer/customer/{}/food/${
-                        item.id
-                      }?star=${rating}`,
+                      `http://foodcout.ap-southeast-1.elasticbeanstalk.com/customer/${
+                        this.state.customerWalletId
+                      }/food/${item.id}?star=${rating}`,
                       {
                         method: 'POST',
                         headers: {
