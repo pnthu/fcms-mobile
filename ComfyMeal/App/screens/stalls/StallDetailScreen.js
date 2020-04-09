@@ -1,5 +1,4 @@
 import * as React from 'react';
-import update from 'immutability-helper';
 import {
   StyleSheet,
   View,
@@ -14,6 +13,7 @@ import StarRating from 'react-native-star-rating';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import AsyncStorage from '@react-native-community/async-storage';
 import NumberFormat from 'react-number-format';
+import {EventRegister} from 'react-native-event-listeners';
 
 class StallDetailScreen extends React.Component {
   constructor(props) {
@@ -31,11 +31,7 @@ class StallDetailScreen extends React.Component {
     };
   }
 
-  componentDidMount = async () => {
-    this.backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-      this.props.navigation.goBack();
-      return true;
-    });
+  loadData = async () => {
     try {
       const response = await AsyncStorage.getItem('cart');
       const cart = JSON.parse(response);
@@ -99,6 +95,20 @@ class StallDetailScreen extends React.Component {
       .catch(error => {
         console.log(error);
       });
+  };
+
+  componentDidMount = async () => {
+    this.backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      this.props.navigation.goBack();
+      return true;
+    });
+    await this.loadData();
+  };
+
+  componentWillMount = () => {
+    this.listener = EventRegister.addEventListener('updateCart', async () => {
+      await this.loadData();
+    });
   };
 
   addToCart = async food => {

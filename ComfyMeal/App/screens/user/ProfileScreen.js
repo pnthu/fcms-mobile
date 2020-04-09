@@ -163,14 +163,13 @@ class ProfileScreen extends React.Component {
             width: '80%',
             borderRadius: 4,
             height: 300,
-            marginLeft: 'auto',
-            marginRight: 'auto',
+            alignSelf: 'center',
+            marginBottom: 24,
           }}
           source={{
             uri: this.state.customerWallet.qrCode,
           }}
         />
-        <Text style={{textAlign: 'center', marginTop: 15}}>Version 1.0.0</Text>
       </ScrollView>
     );
   }
