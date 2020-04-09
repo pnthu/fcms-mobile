@@ -8,6 +8,7 @@ import {
   FlatList,
   TouchableOpacity,
   ToastAndroid,
+  ActivityIndicator,
 } from 'react-native';
 import StarRating from 'react-native-star-rating';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
@@ -28,6 +29,7 @@ class StallDetailScreen extends React.Component {
         foodStallrating: 0,
       },
       cart: null,
+      loading: true,
     };
   }
 
@@ -102,7 +104,9 @@ class StallDetailScreen extends React.Component {
       this.props.navigation.goBack();
       return true;
     });
+    this.setState({loading: true});
     await this.loadData();
+    this.setState({loading: false});
   };
 
   componentWillMount = () => {
@@ -166,73 +170,49 @@ class StallDetailScreen extends React.Component {
     console.log('menu', this.state.foodStallMenu);
     return (
       <>
-        <Image
-          source={{
-            uri: this.state.foodStallDetail.foodStallImage,
-          }}
-          resizeMethod="resize"
-          style={styles.stallImage}
-        />
-        <View style={styles.container}>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}>
-            <FontAwesome5
-              name="chevron-left"
-              color="black"
-              size={22}
-              onPress={() => {
-                this.props.navigation.goBack();
-              }}
+        {this.state.loading === true ? (
+          <View style={(styles.loadingHorizontal, styles.loadingContainer)}>
+            <ActivityIndicator
+              animating={this.state.loading}
+              size="large"
+              color="#3d66cf"
             />
-            <Text style={styles.name}>
-              {this.state.foodStallDetail.foodStallName}
-            </Text>
           </View>
-          <View
-            style={{
-              flexDirection: 'row',
-              marginTop: 6,
-              justifyContent: 'flex-end',
-              alignItems: 'center',
-            }}>
-            <View style={{flexDirection: 'row'}}>
-              <StarRating
-                disabled
-                halfStarEnabled
-                starSize={15}
-                fullStarColor="#ffdd00"
-                halfStarColor="#ffdd00"
-                emptyStarColor="#ffdd00"
-                rating={this.state.foodStallDetail.foodStallRating / 2}
-                containerStyle={styles.stars}
-              />
-              <Text>{this.state.foodStallDetail.foodStallRating / 2}</Text>
-            </View>
-          </View>
-          <Text
-            style={{fontStyle: 'italic', color: '#808080', paddingVertical: 8}}>
-            {this.state.foodStallDetail.foodStallDescription}
-          </Text>
-          <FlatList
-            data={this.state.foodStallMenu}
-            showsVerticalScrollIndicator={false}
-            numColumns={1}
-            renderItem={({item, index}) => (
-              <View key={index} style={styles.foodCard}>
-                <Image source={{uri: item.foodImage}} style={styles.foodImg} />
-                <View>
-                  <Text
-                    style={{
-                      fontSize: 20,
-                      fontWeight: 'bold',
-                      marginBottom: 4,
-                      marginRight: 'auto',
-                    }}>
-                    {item.foodName}
-                  </Text>
+        ) : (
+          <>
+            <Image
+              source={{
+                uri: this.state.foodStallDetail.foodStallImage,
+              }}
+              resizeMethod="resize"
+              style={styles.stallImage}
+            />
+            <View style={styles.container}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                }}>
+                <FontAwesome5
+                  name="chevron-left"
+                  color="black"
+                  size={22}
+                  onPress={() => {
+                    this.props.navigation.goBack();
+                  }}
+                />
+                <Text style={styles.name}>
+                  {this.state.foodStallDetail.foodStallName}
+                </Text>
+              </View>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  marginTop: 6,
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                }}>
+                <View style={{flexDirection: 'row'}}>
                   <StarRating
                     disabled
                     halfStarEnabled
@@ -240,117 +220,160 @@ class StallDetailScreen extends React.Component {
                     fullStarColor="#ffdd00"
                     halfStarColor="#ffdd00"
                     emptyStarColor="#ffdd00"
-                    rating={item.foodRating}
+                    rating={this.state.foodStallDetail.foodStallRating / 2}
                     containerStyle={styles.stars}
                   />
-                  <Text
-                    numberOfLines={2}
-                    ellipsizeMode="tail"
-                    style={{
-                      color: '#808080',
-                      fontWeight: '200',
-                      marginBottom: 4,
-                    }}>
-                    {item.foodDescription}
-                  </Text>
-                  {item.retailPrice == 0 ? (
-                    <NumberFormat
-                      style={{marginRight: 'auto'}}
-                      value={item.originPrice}
-                      thousandSeparator={true}
-                      defaultValue={0}
-                      suffix={'VND'}
-                      displayType={'text'}
-                      renderText={value => <Text>{value}</Text>}
-                    />
-                  ) : (
-                    <>
-                      <NumberFormat
-                        style={{marginRight: 'auto'}}
-                        value={item.originPrice}
-                        thousandSeparator={true}
-                        defaultValue={0}
-                        suffix={'VND'}
-                        displayType={'text'}
-                        renderText={value => (
-                          <Text
-                            style={{
-                              textDecorationLine: 'line-through',
-                              textDecorationStyle: 'solid',
-                            }}>
-                            {value}
-                          </Text>
-                        )}
-                      />
-                      <NumberFormat
-                        style={{marginRight: 'auto'}}
-                        value={item.retailPrice}
-                        thousandSeparator={true}
-                        defaultValue={0}
-                        suffix={'VND'}
-                        displayType={'text'}
-                        renderText={value => (
-                          <Text
-                            style={{
-                              color: 'red',
-                            }}>
-                            {value}
-                          </Text>
-                        )}
-                      />
-                    </>
-
-                    // <>
-                    //   <Text
-                    //     style={{
-                    //       textDecorationLine: 'line-through',
-                    //       textDecorationStyle: 'solid',
-                    //     }}>
-                    //     {item.originPrice}đ
-                    //   </Text>
-                    //   <Text
-                    //     style={{
-                    //       color: 'red',
-                    //     }}>
-                    //     {item.retailPrice}đ
-                    //   </Text>
-                    // </>
-                  )}
-                </View>
-                <View style={styles.itemQuantity}>
-                  {item.quantity === 0 || (
-                    <>
-                      <FontAwesome5
-                        name="minus-circle"
-                        onPress={() => this.removeFromCart(item)}
-                        style={styles.btnAddRemove}
-                      />
-                      <Text style={{fontSize: 17}}>{item.quantity}</Text>
-                    </>
-                  )}
-                  <FontAwesome5
-                    name="plus-circle"
-                    onPress={() => this.addToCart(item)}
-                    style={styles.btnAddRemove}
-                  />
+                  <Text>{this.state.foodStallDetail.foodStallRating / 2}</Text>
                 </View>
               </View>
-            )}
-            keyExtractor={(item, index) => index.toString()}
-          />
-        </View>
-        {!this.state.cart || this.state.cart.length === 0 || (
-          <>
-            <TouchableOpacity
-              style={styles.btnCart}
-              onPress={this.onNavigateToCart}>
-              <FontAwesome5
-                name="shopping-cart"
-                color="white"
-                style={{fontSize: 20}}
+              <Text
+                style={{
+                  fontStyle: 'italic',
+                  color: '#808080',
+                  paddingVertical: 8,
+                }}>
+                {this.state.foodStallDetail.foodStallDescription}
+              </Text>
+              <FlatList
+                data={this.state.foodStallMenu}
+                showsVerticalScrollIndicator={false}
+                numColumns={1}
+                renderItem={({item, index}) => (
+                  <View key={index} style={styles.foodCard}>
+                    <Image
+                      source={{uri: item.foodImage}}
+                      style={styles.foodImg}
+                    />
+                    <View>
+                      <Text
+                        style={{
+                          fontSize: 20,
+                          fontWeight: 'bold',
+                          marginBottom: 4,
+                          marginRight: 'auto',
+                        }}>
+                        {item.foodName}
+                      </Text>
+                      <StarRating
+                        disabled
+                        halfStarEnabled
+                        starSize={15}
+                        fullStarColor="#ffdd00"
+                        halfStarColor="#ffdd00"
+                        emptyStarColor="#ffdd00"
+                        rating={item.foodRating}
+                        containerStyle={styles.stars}
+                      />
+                      <Text
+                        numberOfLines={2}
+                        ellipsizeMode="tail"
+                        style={{
+                          color: '#808080',
+                          fontWeight: '200',
+                          marginBottom: 4,
+                        }}>
+                        {item.foodDescription}
+                      </Text>
+                      {item.retailPrice == 0 ? (
+                        <NumberFormat
+                          style={{marginRight: 'auto'}}
+                          value={item.originPrice}
+                          thousandSeparator={true}
+                          defaultValue={0}
+                          suffix={'VND'}
+                          displayType={'text'}
+                          renderText={value => <Text>{value}</Text>}
+                        />
+                      ) : (
+                        <>
+                          <NumberFormat
+                            style={{marginRight: 'auto'}}
+                            value={item.originPrice}
+                            thousandSeparator={true}
+                            defaultValue={0}
+                            suffix={'VND'}
+                            displayType={'text'}
+                            renderText={value => (
+                              <Text
+                                style={{
+                                  textDecorationLine: 'line-through',
+                                  textDecorationStyle: 'solid',
+                                }}>
+                                {value}
+                              </Text>
+                            )}
+                          />
+                          <NumberFormat
+                            style={{marginRight: 'auto'}}
+                            value={item.retailPrice}
+                            thousandSeparator={true}
+                            defaultValue={0}
+                            suffix={'VND'}
+                            displayType={'text'}
+                            renderText={value => (
+                              <Text
+                                style={{
+                                  color: 'red',
+                                }}>
+                                {value}
+                              </Text>
+                            )}
+                          />
+                        </>
+
+                        // <>
+                        //   <Text
+                        //     style={{
+                        //       textDecorationLine: 'line-through',
+                        //       textDecorationStyle: 'solid',
+                        //     }}>
+                        //     {item.originPrice}đ
+                        //   </Text>
+                        //   <Text
+                        //     style={{
+                        //       color: 'red',
+                        //     }}>
+                        //     {item.retailPrice}đ
+                        //   </Text>
+                        // </>
+                      )}
+                    </View>
+                    <View style={styles.itemQuantity}>
+                      {item.quantity === 0 || (
+                        <>
+                          <FontAwesome5
+                            name="minus-circle"
+                            onPress={() => this.removeFromCart(item)}
+                            style={styles.btnAddRemove}
+                          />
+                          <Text style={{fontSize: 17}}>{item.quantity}</Text>
+                        </>
+                      )}
+                      <FontAwesome5
+                        name="plus-circle"
+                        onPress={() => this.addToCart(item)}
+                        style={styles.btnAddRemove}
+                      />
+                    </View>
+                  </View>
+                )}
+                keyExtractor={(item, index) => index.toString()}
               />
-              <Text style={styles.quantity}>{this.state.cart.length}</Text>
-            </TouchableOpacity>
+            </View>
+            {!this.state.cart || this.state.cart.length === 0 || (
+              <>
+                <TouchableOpacity
+                  style={styles.btnCart}
+                  onPress={this.onNavigateToCart}>
+                  <FontAwesome5
+                    name="shopping-cart"
+                    color="white"
+                    style={{fontSize: 20}}
+                  />
+                  <Text style={styles.quantity}>{this.state.cart.length}</Text>
+                </TouchableOpacity>
+              </>
+            )}
           </>
         )}
       </>
@@ -364,6 +387,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     paddingTop: 12,
     paddingHorizontal: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  loadingHorizontal: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 10,
   },
   stallImage: {width: '100%', height: 150},
   name: {

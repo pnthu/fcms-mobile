@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   Modal,
   RefreshControl,
+  ToastAndroid,
+  ActivityIndicator,
 } from 'react-native';
 import {Tabs, Tab, Accordion} from 'native-base';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
@@ -61,7 +63,19 @@ const tags = {
         backgroundColor: '#2ad25f',
         alignSelf: 'center',
       }}>
-      <Text style={{color: 'white'}}>Delivered</Text>
+      <Text style={{color: 'white'}}>Deliveried</Text>
+    </View>
+  ),
+  CANCEL: (
+    <View
+      style={{
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 8,
+        backgroundColor: '#2ad25f',
+        alignSelf: 'center',
+      }}>
+      <Text style={{color: 'red'}}>Cancelled</Text>
     </View>
   ),
 };
@@ -74,13 +88,15 @@ class OrderScreen extends React.Component {
       historyOrder: [],
       historyOrderDetail: [],
       walletId: 0,
-      currentOrder: [],
       currentCart: [],
       visible: false,
+      loading: true,
+      deleteItemId: 0,
     };
   }
 
   componentDidMount = async () => {
+    this.setState({loading: true});
     const currentShoppingCart = await AsyncStorage.getItem('cart');
     const currentOrder = JSON.parse(
       await AsyncStorage.getItem('current-order'),
@@ -134,6 +150,7 @@ class OrderScreen extends React.Component {
       .catch(error => {
         console.log(error);
       });
+    this.setState({loading: false});
   };
 
   _renderHeader = (item, expanded) => {
@@ -324,158 +341,198 @@ class OrderScreen extends React.Component {
     console.log('cart', this.state.currentCart);
     return (
       <>
-        <View style={styles.container}>
-          <Tabs
-            tabBarUnderlineStyle={{backgroundColor: 'white'}}
-            tabBarInactiveTextColor="white">
-            <Tab
-              heading="Current Order"
-              tabStyle={{backgroundColor: '#ee7739'}}
-              activeTabStyle={{backgroundColor: '#ee7739'}}
-              activeTextStyle={{fontWeight: 'bold', color: 'white'}}>
-              <FlatList
-                style={styles.tabContainer}
-                data={this.state.currentCart}
-                showsVerticalScrollIndicator={false}
-                numColumns={1}
-                keyExtractor={(item, index) => index.toString()}
-                renderItem={({item, index}) => {
-                  return (
-                    <View key={index}>
-                      <View
-                        style={{flexDirection: 'row', alignItems: 'center'}}>
-                        <FontAwesome5
-                          name="store"
-                          style={{fontSize: 18, marginRight: 12}}
-                        />
-                        <Text
-                          numberOfLines={1}
-                          ellipsizeMode="tail"
-                          style={{fontSize: 18, fontWeight: 'bold'}}>
-                          {item.foodStallName}
-                        </Text>
-                      </View>
-                      <FlatList
-                        scrollEnabled={false}
-                        data={item.cartItems}
-                        showsVerticalScrollIndicator={false}
-                        numColumns={1}
-                        keyExtractor={(item, index) => index.toString()}
-                        renderItem={({item, index}) => {
-                          return (
-                            <View
-                              key={index}
-                              style={{
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                              }}>
-                              <Text
-                                numberOfLines={1}
-                                ellipsizeMode="tail"
-                                style={{
-                                  width: '55%',
-                                  marginLeft: 12,
-                                }}>
-                                {item.foodName}
-                              </Text>
-                              <Text style={{width: '5%'}}>{item.quantity}</Text>
-                              {tags[item.foodStatus]}
-                              <TouchableOpacity
-                                style={{
-                                  backgroundColor: '#fdf3f2',
-                                  width: 50,
-                                  height: 50,
-                                }}
-                                onPress={() => {
-                                  this.setState({visible: true});
-                                }}>
-                                <FontAwesome5
-                                  name="trash-alt"
-                                  color="#e2574c"
-                                  solid
-                                />
-                              </TouchableOpacity>
-                            </View>
-                          );
-                        }}
-                      />
-                    </View>
-                  );
-                }}
-              />
-            </Tab>
-            <Tab
-              heading="Order History"
-              tabStyle={{backgroundColor: '#ee7739'}}
-              activeTabStyle={{backgroundColor: '#ee7739'}}
-              activeTextStyle={{fontWeight: 'bold', color: 'white'}}>
-              <Accordion
-                dataArray={this.state.historyOrder}
-                animation={true}
-                expanded={true}
-                renderHeader={this._renderHeader}
-                renderContent={this._renderContent}
-              />
-            </Tab>
-          </Tabs>
-        </View>
-        <Modal
-          transparent
-          animationType="fade"
-          onRequestClose={() => {
-            this.setState({visible: false});
-          }}
-          visible={this.state.visible}>
-          <View style={styles.modal}>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                marginBottom: 8,
-              }}>
-              <AntDesign
-                name="exclamationcircleo"
-                style={{color: 'red', marginRight: 12, fontSize: 18}}
-              />
-              <Text style={{fontWeight: 'bold', fontSize: 18}}>
-                Cancel Cart Item
-              </Text>
-            </View>
-            <Text style={{textAlign: 'center'}}>
-              Do you really want to cancel this cart item?
-            </Text>
-            <TouchableOpacity
-              style={styles.modalBtn}
-              onPress={() => {
-                //call api here
-              }}>
-              <Text
-                style={{
-                  color: '#0ec648',
-                  textAlign: 'center',
-                  fontWeight: 'bold',
-                  fontSize: 18,
-                }}>
-                Yes
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.modalBtn}
-              onPress={() => {
-                this.setState({visible: false});
-              }}>
-              <Text
-                style={{
-                  color: '#0ec648',
-                  textAlign: 'center',
-                  fontWeight: 'bold',
-                  fontSize: 18,
-                }}>
-                No
-              </Text>
-            </TouchableOpacity>
+        {this.state.loading === true ? (
+          <View style={(styles.loadingHorizontal, styles.loadingContainer)}>
+            <ActivityIndicator
+              animating={this.state.loading}
+              size="large"
+              color="#3d66cf"
+            />
           </View>
-        </Modal>
+        ) : (
+          <>
+            <View style={styles.container}>
+              <Tabs
+                tabBarUnderlineStyle={{backgroundColor: 'white'}}
+                tabBarInactiveTextColor="white">
+                <Tab
+                  heading="Current Order"
+                  tabStyle={{backgroundColor: '#ee7739'}}
+                  activeTabStyle={{backgroundColor: '#ee7739'}}
+                  activeTextStyle={{fontWeight: 'bold', color: 'white'}}>
+                  <FlatList
+                    style={styles.tabContainer}
+                    data={this.state.currentCart}
+                    showsVerticalScrollIndicator={false}
+                    numColumns={1}
+                    keyExtractor={(item, index) => index.toString()}
+                    renderItem={({item, index}) => {
+                      return (
+                        <View key={index}>
+                          <View
+                            style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                            }}>
+                            <FontAwesome5
+                              name="store"
+                              style={{fontSize: 18, marginRight: 12}}
+                            />
+                            <Text
+                              numberOfLines={1}
+                              ellipsizeMode="tail"
+                              style={{fontSize: 18, fontWeight: 'bold'}}>
+                              {item.foodStallName}
+                            </Text>
+                          </View>
+                          <FlatList
+                            scrollEnabled={false}
+                            data={item.cartItems}
+                            showsVerticalScrollIndicator={false}
+                            numColumns={1}
+                            keyExtractor={(item, index) => index.toString()}
+                            renderItem={({item, index}) => {
+                              return (
+                                <View
+                                  key={index}
+                                  style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                  }}>
+                                  <Text
+                                    numberOfLines={1}
+                                    ellipsizeMode="tail"
+                                    style={{
+                                      width: '55%',
+                                      marginLeft: 12,
+                                    }}>
+                                    {item.foodName}
+                                  </Text>
+                                  <Text style={{width: '5%'}}>
+                                    {item.quantity}
+                                  </Text>
+                                  {tags[item.foodStatus]}
+                                  <TouchableOpacity
+                                    style={{
+                                      backgroundColor: '#fdf3f2',
+                                      width: 50,
+                                      height: 50,
+                                    }}
+                                    onPress={() => {
+                                      this.setState({deleteItemId: item.id});
+                                      this.setState({visible: true});
+                                    }}>
+                                    <FontAwesome5
+                                      name="trash-alt"
+                                      color="#e2574c"
+                                      solid
+                                    />
+                                  </TouchableOpacity>
+                                </View>
+                              );
+                            }}
+                          />
+                        </View>
+                      );
+                    }}
+                  />
+                </Tab>
+                <Tab
+                  heading="Order History"
+                  tabStyle={{backgroundColor: '#ee7739'}}
+                  activeTabStyle={{backgroundColor: '#ee7739'}}
+                  activeTextStyle={{fontWeight: 'bold', color: 'white'}}>
+                  <Accordion
+                    dataArray={this.state.historyOrder}
+                    animation={true}
+                    expanded={true}
+                    renderHeader={this._renderHeader}
+                    renderContent={this._renderContent}
+                  />
+                </Tab>
+              </Tabs>
+            </View>
+            <Modal
+              transparent
+              animationType="fade"
+              onRequestClose={() => {
+                this.setState({visible: false});
+              }}
+              visible={this.state.visible}>
+              <View style={styles.modal}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    marginBottom: 8,
+                  }}>
+                  <AntDesign
+                    name="exclamationcircleo"
+                    style={{color: 'red', marginRight: 12, fontSize: 18}}
+                  />
+                  <Text style={{fontWeight: 'bold', fontSize: 18}}>
+                    Cancel Cart Item
+                  </Text>
+                </View>
+                <Text style={{textAlign: 'center'}}>
+                  Do you really want to cancel this cart item?
+                </Text>
+                <TouchableOpacity
+                  style={styles.modalBtn}
+                  onPress={() => {
+                    console.log(this.state.deleteItemId + ' DELETED');
+                    fetch(
+                      'http://foodcout.ap-southeast-1.elasticbeanstalk.com/cart/update?cartItemId=' +
+                        this.state.deleteItemId +
+                        '&status=CANCEL',
+                      {
+                        method: 'PUT',
+                        headers: {
+                          Accept: 'application/json',
+                          'Content-Type': 'application/json',
+                        },
+                      },
+                    ).catch(error => {
+                      console.log(error);
+                    });
+                    // this.setState({loading: true});
+                    this.setState({visible: false});
+                    ToastAndroid.showWithGravity(
+                      'Your food has been cancelled successfully',
+                      ToastAndroid.SHORT,
+                      ToastAndroid.CENTER,
+                    );
+                  }}>
+                  <Text
+                    style={{
+                      color: '#0ec648',
+                      textAlign: 'center',
+                      fontWeight: 'bold',
+                      fontSize: 18,
+                    }}>
+                    Yes
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.modalBtn}
+                  onPress={() => {
+                    this.setState({visible: false});
+                  }}>
+                  <Text
+                    style={{
+                      color: '#0ec648',
+                      textAlign: 'center',
+                      fontWeight: 'bold',
+                      color: 'red',
+                      fontSize: 18,
+                    }}>
+                    No
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </Modal>
+          </>
+        )}
       </>
     );
   }
@@ -485,6 +542,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'white',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  loadingHorizontal: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 10,
   },
   tabContainer: {
     paddingHorizontal: 12,

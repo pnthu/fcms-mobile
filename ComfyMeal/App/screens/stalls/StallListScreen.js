@@ -10,6 +10,7 @@ import {
   Dimensions,
   ScrollView,
   RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import Carousel from 'react-native-snap-carousel';
 import StarRating from 'react-native-star-rating';
@@ -25,10 +26,12 @@ class StallListScreen extends React.Component {
       searchText: '',
       foodStallName: '',
       refreshing: false,
+      loading: true,
     };
   }
 
   initData = () => {
+    this.setState({loading: true});
     fetch(
       'http://foodcout.ap-southeast-1.elasticbeanstalk.com/food-court/type/lists',
       {
@@ -88,7 +91,9 @@ class StallListScreen extends React.Component {
   };
 
   componentDidMount = async () => {
+    this.setState({loading: true});
     await this.initData();
+    this.setState({loading: false});
   };
 
   onRefresh = async () => {
@@ -129,165 +134,189 @@ class StallListScreen extends React.Component {
     const {navigation} = this.props;
 
     return (
-      <View style={styles.container}>
-        <View
-          style={{
-            justifyContent: 'space-between',
-            flexDirection: 'row',
-            marginBottom: 8,
-          }}>
-          <TextInput
-            value={this.state.searchText}
-            style={styles.searchBar}
-            onChangeText={text => this.setState({searchText: text})}
-            placeholder="Search Food stall..."
-          />
-          <TouchableOpacity
-            style={styles.searchBtn}
-            onPress={() => {
-              fetch(
-                `http://foodcout.ap-southeast-1.elasticbeanstalk.com/food-stall/search?name=${
-                  this.state.searchText
-                }`,
-                {
-                  method: 'GET',
-                  headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                  },
-                },
-              )
-                .then(Response => Response.json())
-                .then(foodStallList => {
-                  this.setState({listFoodStall: foodStallList});
-                })
-                .catch(error => {
-                  console.log(error);
-                });
-            }}>
-            <FontAwesome5 name="search" style={{color: '#ee7739'}} />
-            <Text style={{color: '#ee7739', fontWeight: '500'}}>Search</Text>
-          </TouchableOpacity>
-        </View>
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={this.state.refreshing}
-              onRefresh={this.onRefresh}
-            />
-          }>
-          <View>
-            <Text style={styles.topRating}>Top Rating Food</Text>
-            <Carousel
-              data={this.state.topFoodList}
-              renderItem={this.renderCarousel}
-              itemWidth={Dimensions.get('window').width / 2}
-              sliderWidth={Dimensions.get('window').width}
-              firstItem={1}
+      // <View style={styles.container}>
+      <>
+        {this.state.loading === true ? (
+          <View style={(styles.loadingHorizontal, styles.loadingContainer)}>
+            <ActivityIndicator
+              animating={this.state.loading}
+              size="large"
+              color="#3d66cf"
             />
           </View>
-          <Text style={styles.topRating}>Choose your favorite food</Text>
-          <ScrollView
-            style={styles.tagsContainer}
-            showsHorizontalScrollIndicator={false}
-            horizontal>
-            {this.state.listCategories.map((cate, index) => {
-              return (
-                <TouchableOpacity
-                  onPress={() => {
-                    if (cate.typeName === 'All') {
-                      fetch(
-                        'http://foodcout.ap-southeast-1.elasticbeanstalk.com/food-stall/lists',
-                        {
-                          method: 'GET',
-                          headers: {
-                            Accept: 'application/json',
-                            'Content-Type': 'application/json',
-                          },
-                        },
-                      )
-                        .then(Response => Response.json())
-                        .then(foodStallList => {
-                          this.setState({listFoodStall: foodStallList});
-                        })
-                        .catch(error => {
-                          console.log(error);
-                        });
-                    } else {
-                      fetch(
-                        'http://foodcout.ap-southeast-1.elasticbeanstalk.com/food-stall/filter/' +
-                          cate.typeName,
-                        {
-                          method: 'GET',
-                          headers: {
-                            Accept: 'application/json',
-                            'Content-Type': 'application/json',
-                          },
-                        },
-                      )
-                        .then(Response => Response.json())
-                        .then(foodStallList => {
-                          this.setState({listFoodStall: foodStallList});
-                        })
-                        .catch(error => {
-                          console.log(error);
-                        });
-                    }
-                  }}
-                  key={index}
-                  style={styles.tag}>
-                  <Text style={{color: 'white'}}>{cate.typeName}</Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-          <FlatList
-            scrollEnabled={false}
-            data={this.state.listFoodStall}
-            showsVerticalScrollIndicator={false}
-            numColumns={2}
-            renderItem={({item, index}) => (
+        ) : (
+          <View style={styles.container}>
+            <View
+              style={{
+                justifyContent: 'space-between',
+                flexDirection: 'row',
+                marginBottom: 8,
+              }}>
+              <TextInput
+                value={this.state.searchText}
+                style={styles.searchBar}
+                onChangeText={text => this.setState({searchText: text})}
+                placeholder="Search Food stall..."
+              />
               <TouchableOpacity
-                key={index}
-                style={styles.fsCard}
+                style={styles.searchBtn}
                 onPress={() => {
-                  navigation.navigate('StallDetail', {
-                    foodstall: item.foodStallId,
-                  });
+                  fetch(
+                    `http://foodcout.ap-southeast-1.elasticbeanstalk.com/food-stall/search?name=${
+                      this.state.searchText
+                    }`,
+                    {
+                      method: 'GET',
+                      headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                      },
+                    },
+                  )
+                    .then(Response => Response.json())
+                    .then(foodStallList => {
+                      this.setState({listFoodStall: foodStallList});
+                    })
+                    .catch(error => {
+                      console.log(error);
+                    });
                 }}>
-                <Image
-                  source={{uri: item.foodStallImage}}
-                  style={styles.fsImage}
-                />
-                <Text
-                  ellipsizeMode="tail"
-                  numberOfLines={1}
-                  style={styles.fsTitle}>
-                  {item.foodStallName}
+                <FontAwesome5 name="search" style={{color: '#ee7739'}} />
+                <Text style={{color: '#ee7739', fontWeight: '500'}}>
+                  Search
                 </Text>
-                <StarRating
-                  disabled
-                  halfStarEnabled
-                  starSize={15}
-                  fullStarColor="#ffdd00"
-                  halfStarColor="#ffdd00"
-                  emptyStarColor="#ffdd00"
-                  containerStyle={styles.stars}
-                  rating={item.foodStallRating / 2}
-                />
               </TouchableOpacity>
-            )}
-            keyExtractor={(item, index) => index.toString()}
-            columnWrapperStyle={{justifyContent: 'space-between'}}
-          />
-        </ScrollView>
-      </View>
+            </View>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              refreshControl={
+                <RefreshControl
+                  refreshing={this.state.refreshing}
+                  onRefresh={this.onRefresh}
+                />
+              }>
+              <View>
+                <Text style={styles.topRating}>Top Rating Food</Text>
+                <Carousel
+                  data={this.state.topFoodList}
+                  renderItem={this.renderCarousel}
+                  itemWidth={Dimensions.get('window').width / 2}
+                  sliderWidth={Dimensions.get('window').width}
+                  firstItem={1}
+                />
+              </View>
+              <Text style={styles.topRating}>Choose your favorite food</Text>
+              <ScrollView
+                style={styles.tagsContainer}
+                showsHorizontalScrollIndicator={false}
+                horizontal>
+                {this.state.listCategories.map((cate, index) => {
+                  return (
+                    <TouchableOpacity
+                      onPress={() => {
+                        if (cate.typeName === 'All') {
+                          fetch(
+                            'http://foodcout.ap-southeast-1.elasticbeanstalk.com/food-stall/lists',
+                            {
+                              method: 'GET',
+                              headers: {
+                                Accept: 'application/json',
+                                'Content-Type': 'application/json',
+                              },
+                            },
+                          )
+                            .then(Response => Response.json())
+                            .then(foodStallList => {
+                              this.setState({listFoodStall: foodStallList});
+                            })
+                            .catch(error => {
+                              console.log(error);
+                            });
+                        } else {
+                          fetch(
+                            'http://foodcout.ap-southeast-1.elasticbeanstalk.com/food-stall/filter/' +
+                              cate.typeName,
+                            {
+                              method: 'GET',
+                              headers: {
+                                Accept: 'application/json',
+                                'Content-Type': 'application/json',
+                              },
+                            },
+                          )
+                            .then(Response => Response.json())
+                            .then(foodStallList => {
+                              this.setState({listFoodStall: foodStallList});
+                            })
+                            .catch(error => {
+                              console.log(error);
+                            });
+                        }
+                      }}
+                      key={index}
+                      style={styles.tag}>
+                      <Text style={{color: 'white'}}>{cate.typeName}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+              <FlatList
+                scrollEnabled={false}
+                data={this.state.listFoodStall}
+                showsVerticalScrollIndicator={false}
+                numColumns={2}
+                renderItem={({item, index}) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.fsCard}
+                    onPress={() => {
+                      navigation.navigate('StallDetail', {
+                        foodstall: item.foodStallId,
+                      });
+                    }}>
+                    <Image
+                      source={{uri: item.foodStallImage}}
+                      style={styles.fsImage}
+                    />
+                    <Text
+                      ellipsizeMode="tail"
+                      numberOfLines={1}
+                      style={styles.fsTitle}>
+                      {item.foodStallName}
+                    </Text>
+                    <StarRating
+                      disabled
+                      halfStarEnabled
+                      starSize={15}
+                      fullStarColor="#ffdd00"
+                      halfStarColor="#ffdd00"
+                      emptyStarColor="#ffdd00"
+                      containerStyle={styles.stars}
+                      rating={item.foodStallRating / 2}
+                    />
+                  </TouchableOpacity>
+                )}
+                keyExtractor={(item, index) => index.toString()}
+                columnWrapperStyle={{justifyContent: 'space-between'}}
+              />
+            </ScrollView>
+          </View>
+        )}
+      </>
     );
   };
 }
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  loadingHorizontal: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 10,
+  },
   container: {
     flex: 1,
     backgroundColor: 'white',
