@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import AsyncStorage from '@react-native-community/async-storage';
+import NumberFormat from 'react-number-format';
 
 class CartScreen extends React.Component {
   constructor(props) {
@@ -154,22 +155,51 @@ class CartScreen extends React.Component {
                       {item.foodDescription}
                     </Text>
                     {item.retailPrice == 0 ? (
-                      <Text>{item.originPrice}đ</Text>
+                      <NumberFormat
+                        style={{marginRight: 'auto'}}
+                        value={item.originPrice}
+                        thousandSeparator={true}
+                        defaultValue={0}
+                        suffix={'VND'}
+                        displayType={'text'}
+                        renderText={value => <Text>{value}</Text>}
+                      />
                     ) : (
+                      // <Text>{item.originPrice}đ</Text>
                       <>
-                        <Text
-                          style={{
-                            textDecorationLine: 'line-through',
-                            textDecorationStyle: 'solid',
-                          }}>
-                          {item.originPrice}đ
-                        </Text>
-                        <Text
-                          style={{
-                            color: 'red',
-                          }}>
-                          {item.retailPrice}đ
-                        </Text>
+                        <NumberFormat
+                          style={{marginRight: 'auto'}}
+                          value={item.originPrice}
+                          thousandSeparator={true}
+                          defaultValue={0}
+                          suffix={'VND'}
+                          displayType={'text'}
+                          renderText={value => (
+                            <Text
+                              style={{
+                                textDecorationLine: 'line-through',
+                                textDecorationStyle: 'solid',
+                              }}>
+                              {value}
+                            </Text>
+                          )}
+                        />
+                        <NumberFormat
+                          style={{marginRight: 'auto'}}
+                          value={item.retailPrice}
+                          thousandSeparator={true}
+                          defaultValue={0}
+                          suffix={'VND'}
+                          displayType={'text'}
+                          renderText={value => (
+                            <Text
+                              style={{
+                                color: 'red',
+                              }}>
+                              {value}
+                            </Text>
+                          )}
+                        />
                       </>
                     )}
                   </View>

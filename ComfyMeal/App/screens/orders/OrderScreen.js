@@ -4,6 +4,7 @@ import {Tabs, Tab, Accordion} from 'native-base';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-community/async-storage';
+import NumberFormat from 'react-number-format';
 
 const data = [
   {
@@ -93,15 +94,26 @@ class OrderScreen extends React.Component {
           marginTop: 5,
           marginBottom: 5,
           paddingLeft: 8,
-          paddingRight: 30,
+          paddingRight: 10,
         }}>
         <View style={{flexDirection: 'row'}}>
           <Text style={{fontWeight: '600', fontSize: 14}}>
             Purchase Date: {item.purchaseDate}
           </Text>
-          <Text style={{fontWeight: '600', marginLeft: 'auto', fontSize: 14}}>
-            Total Price: {item.totalPrice}
-          </Text>
+          <NumberFormat
+            style={{marginRight: 'auto'}}
+            value={item.totalPrice}
+            thousandSeparator={true}
+            defaultValue={0}
+            suffix={'VND'}
+            displayType={'text'}
+            renderText={value => (
+              <Text
+                style={{fontWeight: '600', marginLeft: 'auto', fontSize: 14}}>
+                Total Price: {value}
+              </Text>
+            )}
+          />
         </View>
         {item.cartStatus === 'CANCEL' && (
           <View style={{flexDirection: 'row'}}>
@@ -223,9 +235,19 @@ class OrderScreen extends React.Component {
                   paddingRight: 30,
                 }}>
                 <View style={{flexDirection: 'row'}}>
-                  <Text style={{fontSize: 13, fontWeight: '600'}}>
-                    Total Price: {detail.purchasedPrice}đ
-                  </Text>
+                  <NumberFormat
+                    style={{marginRight: 'auto'}}
+                    value={detail.purchasedPrice}
+                    thousandSeparator={true}
+                    defaultValue={0}
+                    suffix={'VND'}
+                    displayType={'text'}
+                    renderText={value => (
+                      <Text style={{fontSize: 13, fontWeight: '600'}}>
+                        Total Price: {value}
+                      </Text>
+                    )}
+                  />
                   <Text
                     style={{
                       marginLeft: 'auto',

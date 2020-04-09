@@ -13,6 +13,7 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import AsyncStorage from '@react-native-community/async-storage';
 import {GoogleSignin} from '@react-native-community/google-signin';
 import {LoginManager} from 'react-native-fbsdk';
+import NumberFormat from 'react-number-format';
 
 class ProfileScreen extends React.Component {
   constructor(props) {
@@ -86,10 +87,21 @@ class ProfileScreen extends React.Component {
           </View>
           <View style={styles.row}>
             <FontAwesome5 name="wallet" color="white" style={styles.icon} />
-            <Text style={{marginRight: 'auto'}}>
+            <NumberFormat
+              style={{marginRight: 'auto'}}
+              value={this.state.customerWallet.walletBalance}
+              thousandSeparator={true}
+              defaultValue={0}
+              prefix={'Your Wallet balance: '}
+              suffix={'VND'}
+              displayType={'text'}
+              renderText={value => <Text>{value}</Text>}
+            />
+            {/* <Text style={{marginRight: 'auto'}}>
               Your wallet balance: {this.state.customerWallet.walletBalance}
-            </Text>
+            </Text> */}
             <TouchableOpacity
+              style={{marginLeft: 'auto'}}
               onPress={() => {
                 fetch(
                   'http://foodcout.ap-southeast-1.elasticbeanstalk.com/customer/wallet/' +
