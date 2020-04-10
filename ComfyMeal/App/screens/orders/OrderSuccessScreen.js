@@ -82,7 +82,11 @@ class OrderSuccessScreen extends React.Component {
 
         <TouchableOpacity
           style={styles.btnConfirm}
-          onPress={() => this.props.navigation.navigate('CustomerHome')}>
+          onPress={async () => {
+            const cart = [];
+            await AsyncStorage.setItem('cart', JSON.stringify(cart));
+            this.props.navigation.navigate('CustomerHome');
+          }}>
           <Text
             style={{
               textAlign: 'center',

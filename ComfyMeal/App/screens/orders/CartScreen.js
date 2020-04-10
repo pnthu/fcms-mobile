@@ -97,7 +97,6 @@ class CartScreen extends React.Component {
   order = async () => {
     if (this.state.totalPrice > this.state.wallet.walletBalance) {
       this.setState({visible: true});
-      console.log('wallet', this.state.cartDto.walletId);
     } else {
       this.state.cart.map((c, index) => {
         this.state.itemList.push({
@@ -106,6 +105,9 @@ class CartScreen extends React.Component {
           note: '',
         });
       });
+
+      console.log('cart', this.state.cart);
+      console.log('mapped', this.state.itemList);
 
       this.state.cartDto.cartItems = this.state.itemList;
       console.log(this.state.cartDto);
@@ -117,8 +119,12 @@ class CartScreen extends React.Component {
         },
         body: JSON.stringify(this.state.cartDto),
       });
-      const cart = [];
-      await AsyncStorage.setItem('cart', JSON.stringify(cart));
+
+      // ToastAndroid.showWithGravity(
+      //   'Your order has been purchased successfully!',
+      //   ToastAndroid.LONG,
+      //   ToastAndroid.CENTER,
+      // );
       this.props.navigation.navigate('OrderSuccess');
     }
   };

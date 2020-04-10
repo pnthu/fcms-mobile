@@ -9,11 +9,11 @@ import {
   RefreshControl,
   ToastAndroid,
   ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 import {Tabs, Tab, Accordion} from 'native-base';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import AntDesign from 'react-native-vector-icons/AntDesign';
 import AsyncStorage from '@react-native-community/async-storage';
 import NumberFormat from 'react-number-format';
 
@@ -24,8 +24,8 @@ const tags = {
         paddingHorizontal: 8,
         paddingVertical: 4,
         borderRadius: 8,
-        backgroundColor: '#e0ebfd',
         alignSelf: 'center',
+        backgroundColor: '#e0ebfd',
       }}>
       <Text style={{color: '#467df1'}}>Queue</Text>
     </View>
@@ -36,8 +36,8 @@ const tags = {
         paddingHorizontal: 8,
         paddingVertical: 4,
         borderRadius: 8,
-        backgroundColor: '#447def',
         alignSelf: 'center',
+        backgroundColor: '#447def',
       }}>
       <Text style={{color: 'white'}}>Preparing</Text>
     </View>
@@ -48,8 +48,8 @@ const tags = {
         paddingHorizontal: 8,
         paddingVertical: 4,
         borderRadius: 8,
-        backgroundColor: '#d8f6e2',
         alignSelf: 'center',
+        backgroundColor: '#d8f6e2',
       }}>
       <Text style={{color: '#1f9946'}}>Ready</Text>
     </View>
@@ -60,8 +60,8 @@ const tags = {
         paddingHorizontal: 8,
         paddingVertical: 4,
         borderRadius: 8,
-        backgroundColor: '#2ad25f',
         alignSelf: 'center',
+        backgroundColor: '#2ad25f',
       }}>
       <Text style={{color: 'white'}}>Deliveried</Text>
     </View>
@@ -92,6 +92,8 @@ class OrderScreen extends React.Component {
       visible: false,
       loading: true,
       deleteItemId: 0,
+      refreshCurrent: false,
+      refreshHistory: false,
     };
   }
 
@@ -110,7 +112,35 @@ class OrderScreen extends React.Component {
       walletId: customerWallet.walletId,
       shoppingCart: currentShoppingCart,
     });
+    await this.fetchCurrentOrder();
+    await this.fetchHistoryOrder();
+    this.setState({loading: false});
+  };
 
+  fetchCurrentOrder = () => {
+    fetch(
+      `http://foodcout.ap-southeast-1.elasticbeanstalk.com/cart/${
+        this.state.walletId
+      }/in-progress/detail`,
+      {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      },
+    )
+      .then(Response => Response.json())
+      .then(currentOrder => {
+        this.setState({currentCart: currentOrder});
+        console.log('current', this.state.currentCart);
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  };
+
+  fetchHistoryOrder = () => {
     fetch(
       'http://foodcout.ap-southeast-1.elasticbeanstalk.com/cart/' +
         this.state.walletId +
@@ -130,27 +160,6 @@ class OrderScreen extends React.Component {
       .catch(error => {
         console.log(error);
       });
-
-    fetch(
-      `http://foodcout.ap-southeast-1.elasticbeanstalk.com/cart/${
-        this.state.walletId
-      }/in-progress/detail`,
-      {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-      },
-    )
-      .then(Response => Response.json())
-      .then(currentOrder => {
-        this.setState({currentCart: currentOrder});
-      })
-      .catch(error => {
-        console.log(error);
-      });
-    this.setState({loading: false});
   };
 
   _renderHeader = (item, expanded) => {
@@ -337,6 +346,18 @@ class OrderScreen extends React.Component {
     );
   };
 
+  onRefreshCurrent = async () => {
+    this.setState({refreshCurrent: true});
+    await this.fetchCurrentOrder();
+    this.setState({refreshCurrent: false});
+  };
+
+  onRefreshHistory = async () => {
+    this.setState({refreshHistory: true});
+    await this.fetchHistoryOrder();
+    this.setState({refreshHistory: false});
+  };
+
   render() {
     console.log('cart', this.state.currentCart);
     return (
@@ -361,6 +382,12 @@ class OrderScreen extends React.Component {
                   activeTabStyle={{backgroundColor: '#ee7739'}}
                   activeTextStyle={{fontWeight: 'bold', color: 'white'}}>
                   <FlatList
+                    refreshControl={
+                      <RefreshControl
+                        refreshing={this.state.refreshCurrent}
+                        onRefresh={this.onRefreshCurrent}
+                      />
+                    }
                     style={styles.tabContainer}
                     data={this.state.currentCart}
                     showsVerticalScrollIndicator={false}
@@ -368,7 +395,11 @@ class OrderScreen extends React.Component {
                     keyExtractor={(item, index) => index.toString()}
                     renderItem={({item, index}) => {
                       return (
-                        <View key={index}>
+                        <View
+                          key={index}
+                          style={{
+                            marginBottom: 12,
+                          }}>
                           <View
                             style={{
                               flexDirection: 'row',
@@ -393,42 +424,62 @@ class OrderScreen extends React.Component {
                             keyExtractor={(item, index) => index.toString()}
                             renderItem={({item, index}) => {
                               return (
-                                <View
-                                  key={index}
-                                  style={{
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
-                                  }}>
-                                  <Text
-                                    numberOfLines={1}
-                                    ellipsizeMode="tail"
-                                    style={{
-                                      width: '55%',
-                                      marginLeft: 12,
-                                    }}>
-                                    {item.foodName}
-                                  </Text>
-                                  <Text style={{width: '5%'}}>
-                                    {item.quantity}
-                                  </Text>
-                                  {tags[item.foodStatus]}
-                                  <TouchableOpacity
-                                    style={{
-                                      backgroundColor: '#fdf3f2',
-                                      width: 50,
-                                      height: 50,
-                                    }}
-                                    onPress={() => {
-                                      this.setState({deleteItemId: item.id});
-                                      this.setState({visible: true});
-                                    }}>
-                                    <FontAwesome5
-                                      name="trash-alt"
-                                      color="#e2574c"
-                                      solid
-                                    />
-                                  </TouchableOpacity>
-                                </View>
+                                <>
+                                  {item.foodStatus !== 'CANCEL' && (
+                                    <View
+                                      key={index}
+                                      style={{
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        marginBottom: 8,
+                                      }}>
+                                      <Text
+                                        numberOfLines={1}
+                                        ellipsizeMode="tail"
+                                        style={{
+                                          width: '50%',
+                                          marginLeft: 12,
+                                        }}>
+                                        {item.foodName}
+                                      </Text>
+                                      <Text style={{width: '8%'}}>
+                                        {item.quantity}
+                                      </Text>
+                                      <View
+                                        style={{
+                                          flexDirection: 'row',
+                                          width: '39%',
+                                          justifyContent: 'space-between',
+                                          alignItems: 'center',
+                                        }}>
+                                        {tags[item.foodStatus]}
+                                        {item.foodStatus === 'QUEUE' && (
+                                          <TouchableOpacity
+                                            style={{
+                                              backgroundColor: '#fdf3f2',
+                                              width: 30,
+                                              height: 30,
+                                              alignItems: 'center',
+                                              justifyContent: 'center',
+                                              borderRadius: 8,
+                                            }}
+                                            onPress={() => {
+                                              this.setState({
+                                                visible: true,
+                                                deleteItemId: item.id,
+                                              });
+                                            }}>
+                                            <FontAwesome5
+                                              name="trash-alt"
+                                              color="#e2574c"
+                                              solid
+                                            />
+                                          </TouchableOpacity>
+                                        )}
+                                      </View>
+                                    </View>
+                                  )}
+                                </>
                               );
                             }}
                           />
@@ -442,13 +493,22 @@ class OrderScreen extends React.Component {
                   tabStyle={{backgroundColor: '#ee7739'}}
                   activeTabStyle={{backgroundColor: '#ee7739'}}
                   activeTextStyle={{fontWeight: 'bold', color: 'white'}}>
-                  <Accordion
-                    dataArray={this.state.historyOrder}
-                    animation={true}
-                    expanded={true}
-                    renderHeader={this._renderHeader}
-                    renderContent={this._renderContent}
-                  />
+                  <ScrollView
+                    showsVerticalScrollIndicator={false}
+                    refreshControl={
+                      <RefreshControl
+                        refreshing={this.state.refreshHistory}
+                        onRefresh={this.onRefreshHistory}
+                      />
+                    }>
+                    <Accordion
+                      dataArray={this.state.historyOrder}
+                      animation={true}
+                      expanded={true}
+                      renderHeader={this._renderHeader}
+                      renderContent={this._renderContent}
+                    />
+                  </ScrollView>
                 </Tab>
               </Tabs>
             </View>
@@ -460,75 +520,73 @@ class OrderScreen extends React.Component {
               }}
               visible={this.state.visible}>
               <View style={styles.modal}>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    marginBottom: 8,
-                  }}>
-                  <AntDesign
-                    name="exclamationcircleo"
-                    style={{color: 'red', marginRight: 12, fontSize: 18}}
-                  />
-                  <Text style={{fontWeight: 'bold', fontSize: 18}}>
-                    Cancel Cart Item
-                  </Text>
-                </View>
+                <Text
+                  style={{fontWeight: 'bold', fontSize: 18, marginBottom: 8}}>
+                  Cancel Cart Item
+                </Text>
                 <Text style={{textAlign: 'center'}}>
                   Do you really want to cancel this cart item?
                 </Text>
-                <TouchableOpacity
-                  style={styles.modalBtn}
-                  onPress={() => {
-                    console.log(this.state.deleteItemId + ' DELETED');
-                    fetch(
-                      'http://foodcout.ap-southeast-1.elasticbeanstalk.com/cart/update?cartItemId=' +
-                        this.state.deleteItemId +
-                        '&status=CANCEL',
-                      {
-                        method: 'PUT',
-                        headers: {
-                          Accept: 'application/json',
-                          'Content-Type': 'application/json',
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-evenly',
+                  }}>
+                  <TouchableOpacity
+                    style={styles.modalBtn}
+                    onPress={async () => {
+                      this.setState({loading: true});
+                      console.log(this.state.deleteItemId + ' DELETED');
+                      fetch(
+                        'http://foodcout.ap-southeast-1.elasticbeanstalk.com/cart/update?cartItemId=' +
+                          this.state.deleteItemId +
+                          '&status=CANCEL',
+                        {
+                          method: 'PUT',
+                          headers: {
+                            Accept: 'application/json',
+                            'Content-Type': 'application/json',
+                          },
                         },
-                      },
-                    ).catch(error => {
-                      console.log(error);
-                    });
-                    // this.setState({loading: true});
-                    this.setState({visible: false});
-                    ToastAndroid.showWithGravity(
-                      'Your food has been cancelled successfully',
-                      ToastAndroid.SHORT,
-                      ToastAndroid.CENTER,
-                    );
-                  }}>
-                  <Text
-                    style={{
-                      color: '#0ec648',
-                      textAlign: 'center',
-                      fontWeight: 'bold',
-                      fontSize: 18,
+                      ).catch(error => {
+                        console.log(error);
+                      });
+
+                      this.setState({visible: false});
+                      ToastAndroid.showWithGravity(
+                        'Your food has been cancelled successfully',
+                        ToastAndroid.SHORT,
+                        ToastAndroid.CENTER,
+                      );
+                      await this.fetchCurrentOrder();
+                      this.setState({loading: false});
                     }}>
-                    Yes
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.modalBtn}
-                  onPress={() => {
-                    this.setState({visible: false});
-                  }}>
-                  <Text
-                    style={{
-                      color: '#0ec648',
-                      textAlign: 'center',
-                      fontWeight: 'bold',
-                      color: 'red',
-                      fontSize: 18,
+                    <Text
+                      style={{
+                        color: '#e2574c',
+                        textAlign: 'center',
+                        fontWeight: 'bold',
+                        fontSize: 18,
+                      }}>
+                      Yes
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.modalBtn}
+                    onPress={() => {
+                      this.setState({visible: false});
                     }}>
-                    No
-                  </Text>
-                </TouchableOpacity>
+                    <Text
+                      style={{
+                        color: '#4f5e71',
+                        textAlign: 'center',
+                        fontWeight: 'bold',
+                        fontSize: 18,
+                      }}>
+                      No
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </Modal>
           </>
@@ -571,11 +629,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#5bb8ea',
     marginRight: 6,
-  },
-  chip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
   },
   modal: {
     marginHorizontal: 20,

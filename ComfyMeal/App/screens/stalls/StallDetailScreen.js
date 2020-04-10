@@ -115,6 +115,11 @@ class StallDetailScreen extends React.Component {
     });
   };
 
+  componentWillUnmount = async () => {
+    await AsyncStorage.setItem('cart', JSON.stringify(this.state.cart));
+    EventRegister.emit('updateList');
+  };
+
   addToCart = async food => {
     if (this.state.cart === null) {
       ToastAndroid.show('Please login to order our food.', ToastAndroid.SHORT);
@@ -161,7 +166,7 @@ class StallDetailScreen extends React.Component {
     this.setState({foodStallMenu: currentMenu});
   };
 
-  onNavigateToCart = async () => {
+  onNavigateToCart = () => {
     this.props.navigation.navigate('CartInfo');
   };
 
@@ -223,7 +228,11 @@ class StallDetailScreen extends React.Component {
                     rating={this.state.foodStallDetail.foodStallRating / 2}
                     containerStyle={styles.stars}
                   />
-                  <Text>{this.state.foodStallDetail.foodStallRating / 2}</Text>
+                  <Text>
+                    {Math.round(
+                      (this.state.foodStallDetail.foodStallRating / 2) * 10,
+                    ) / 10}
+                  </Text>
                 </View>
               </View>
               <Text

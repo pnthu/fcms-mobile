@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   btnText: {
     color: 'white',
     fontWeight: 'bold',
-    marginLeft: 40,
+    marginLeft: 25,
     textAlignVertical: 'center',
   },
 });
