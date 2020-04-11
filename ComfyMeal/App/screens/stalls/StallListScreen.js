@@ -18,6 +18,7 @@ import StarRating from 'react-native-star-rating';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import {EventRegister} from 'react-native-event-listeners';
 import AsyncStorage from '@react-native-community/async-storage';
+import NumberFormat from 'react-number-format';
 
 class StallListScreen extends React.Component {
   constructor(props) {
@@ -30,7 +31,7 @@ class StallListScreen extends React.Component {
       foodStallName: '',
       refreshing: false,
       loading: true,
-      cart: [],
+      cart: null,
       visible: false,
       selectedFood: {},
       quantity: 1,
@@ -39,10 +40,10 @@ class StallListScreen extends React.Component {
 
   initData = async () => {
     try {
-      const response = await AsyncStorage.getItem('cart');
-      const cart = JSON.parse(response);
-      console.log('cart', cart);
-      cart && this.setState({cart: cart});
+      // const response = await AsyncStorage.getItem('cart');
+      // const cart = JSON.parse(response);
+      // console.log('cart', cart);
+      // cart && this.setState({cart: cart});
     } catch (error) {
       console.log('Something was wrong, ', error);
     }
@@ -105,18 +106,25 @@ class StallListScreen extends React.Component {
   };
 
   addToCart = async () => {
-    const tmpCart = this.state.cart;
-    for (let i = 0; i < this.state.quantity; i++) {
-      tmpCart.push(this.state.selectedFood);
+    if (this.state.cart === null) {
+      ToastAndroid.show('Please login to order our food.', ToastAndroid.SHORT);
+      this.props.navigation.navigate('ProfileTab', {
+        foodstall: this.props.navigation.state.params.foodstall,
+      });
+    } else {
+      const tmpCart = this.state.cart;
+      for (let i = 0; i < this.state.quantity; i++) {
+        tmpCart.push(this.state.selectedFood);
+      }
+      console.log('cart cart', JSON.stringify(tmpCart));
+      this.setState({
+        selectedFood: {},
+        quantity: 1,
+        cart: tmpCart,
+        visible: false,
+      });
+      await AsyncStorage.setItem('cart', JSON.stringify(this.state.cart));
     }
-    console.log('cart cart', JSON.stringify(tmpCart));
-    this.setState({
-      selectedFood: {},
-      quantity: 1,
-      cart: tmpCart,
-      visible: false,
-    });
-    await AsyncStorage.setItem('cart', JSON.stringify(this.state.cart));
   };
 
   componentDidMount = async () => {
@@ -156,16 +164,57 @@ class StallListScreen extends React.Component {
         <Text ellipsizeMode="tail" numberOfLines={1} style={styles.fsTitle}>
           {item.foodName}
         </Text>
-        <StarRating
-          disabled
-          halfStarEnabled
-          starSize={15}
-          fullStarColor="#ffdd00"
-          halfStarColor="#ffdd00"
-          emptyStarColor="#ffdd00"
-          rating={item.foodRating}
-          containerStyle={styles.stars}
-        />
+        <View style={{flexDirection: 'row'}}>
+          <StarRating
+            disabled
+            halfStarEnabled
+            starSize={15}
+            fullStarColor="#ffdd00"
+            halfStarColor="#ffdd00"
+            emptyStarColor="#ffdd00"
+            rating={item.foodRating}
+            containerStyle={{
+              justifyContent: 'flex-start',
+              marginTop: 2,
+              marginRight: 'auto',
+            }}
+          />
+          {item.retailPrice === 0 ? (
+            <NumberFormat
+              style={{marginLeft: 'auto'}}
+              value={item.originPrice}
+              thousandSeparator={true}
+              defaultValue={0}
+              suffix={'VND'}
+              displayType={'text'}
+              renderText={value => (
+                <Text
+                  style={{
+                    color: 'red',
+                  }}>
+                  {value}
+                </Text>
+              )}
+            />
+          ) : (
+            <NumberFormat
+              style={{marginLeft: 'auto'}}
+              value={item.retailPrice}
+              thousandSeparator={true}
+              defaultValue={0}
+              suffix={'VND'}
+              displayType={'text'}
+              renderText={value => (
+                <Text
+                  style={{
+                    color: 'red',
+                  }}>
+                  {value}
+                </Text>
+              )}
+            />
+          )}
+        </View>
       </TouchableOpacity>
     );
   };
@@ -353,6 +402,102 @@ class StallListScreen extends React.Component {
                 <Text style={{fontWeight: 'bold', fontSize: 18}}>
                   Add to Cart
                 </Text>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    borderTopWidth: 1,
+                    borderColor: '#dadada',
+                    paddingVertical: 12,
+                    paddingRight: 80,
+                  }}>
+                  <Image
+                    source={{uri: this.state.selectedFood.foodImage}}
+                    style={{
+                      width: 100,
+                      height: 100,
+                      marginRight: 'auto',
+                      marginTop: 15,
+                    }}
+                  />
+                  <View>
+                    <Text
+                      style={{
+                        fontSize: 20,
+                        fontWeight: 'bold',
+                        marginBottom: 4,
+                        marginLeft: 'auto',
+                      }}>
+                      {this.state.selectedFood.foodName}
+                    </Text>
+                    {/* <StarRating
+                      disabled
+                      halfStarEnabled
+                      starSize={15}
+                      fullStarColor="#ffdd00"
+                      halfStarColor="#ffdd00"
+                      emptyStarColor="#ffdd00"
+                      rating={item.foodRating}
+                      containerStyle={styles.stars}
+                    /> */}
+                    <Text
+                      numberOfLines={2}
+                      ellipsizeMode="tail"
+                      style={{
+                        color: '#808080',
+                        fontWeight: '200',
+                        marginBottom: 4,
+                      }}>
+                      {this.state.selectedFood.foodDescription}
+                    </Text>
+                    {this.state.selectedFood.retailPrice == 0 ? (
+                      <NumberFormat
+                        style={{marginRight: 'auto'}}
+                        value={this.state.selectedFood.originPrice}
+                        thousandSeparator={true}
+                        defaultValue={0}
+                        suffix={'VND'}
+                        displayType={'text'}
+                        renderText={value => <Text>{value}</Text>}
+                      />
+                    ) : (
+                      <>
+                        <NumberFormat
+                          style={{marginRight: 'auto'}}
+                          value={this.state.selectedFood.originPrice}
+                          thousandSeparator={true}
+                          defaultValue={0}
+                          suffix={'VND'}
+                          displayType={'text'}
+                          renderText={value => (
+                            <Text
+                              style={{
+                                textDecorationLine: 'line-through',
+                                textDecorationStyle: 'solid',
+                              }}>
+                              {value}
+                            </Text>
+                          )}
+                        />
+                        <NumberFormat
+                          style={{marginRight: 'auto'}}
+                          value={this.state.selectedFood.retailPrice}
+                          thousandSeparator={true}
+                          defaultValue={0}
+                          suffix={'VND'}
+                          displayType={'text'}
+                          renderText={value => (
+                            <Text
+                              style={{
+                                color: 'red',
+                              }}>
+                              {value}
+                            </Text>
+                          )}
+                        />
+                      </>
+                    )}
+                  </View>
+                </View>
                 <View style={styles.itemQuantity}>
                   <FontAwesome5
                     name="minus-circle"

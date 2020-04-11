@@ -16,6 +16,7 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-community/async-storage';
 import NumberFormat from 'react-number-format';
+import {TextInput} from 'react-native-gesture-handler';
 
 const tags = {
   QUEUE: (
@@ -72,7 +73,7 @@ const tags = {
         paddingHorizontal: 8,
         paddingVertical: 4,
         borderRadius: 8,
-        backgroundColor: '#2ad25f',
+        backgroundColor: '#e0ebfd',
         alignSelf: 'center',
       }}>
       <Text style={{color: 'red'}}>Cancelled</Text>
@@ -92,6 +93,7 @@ class OrderScreen extends React.Component {
       visible: false,
       loading: true,
       deleteItemId: 0,
+      reason: '',
       refreshCurrent: false,
       refreshHistory: false,
     };
@@ -119,7 +121,7 @@ class OrderScreen extends React.Component {
 
   fetchCurrentOrder = () => {
     fetch(
-      `http://foodcout.ap-southeast-1.elasticbeanstalk.com/cart/${
+      `http://192.168.1.102:8080/cart/${
         this.state.walletId
       }/in-progress/detail`,
       {
@@ -425,60 +427,58 @@ class OrderScreen extends React.Component {
                             renderItem={({item, index}) => {
                               return (
                                 <>
-                                  {item.foodStatus !== 'CANCEL' && (
+                                  <View
+                                    key={index}
+                                    style={{
+                                      flexDirection: 'row',
+                                      alignItems: 'center',
+                                      marginBottom: 8,
+                                    }}>
+                                    <Text
+                                      numberOfLines={1}
+                                      ellipsizeMode="tail"
+                                      style={{
+                                        width: '50%',
+                                        marginLeft: 12,
+                                      }}>
+                                      {item.foodName}
+                                    </Text>
+                                    <Text style={{width: '8%'}}>
+                                      {item.quantity}
+                                    </Text>
                                     <View
-                                      key={index}
                                       style={{
                                         flexDirection: 'row',
+                                        width: '39%',
+                                        justifyContent: 'space-between',
                                         alignItems: 'center',
-                                        marginBottom: 8,
                                       }}>
-                                      <Text
-                                        numberOfLines={1}
-                                        ellipsizeMode="tail"
-                                        style={{
-                                          width: '50%',
-                                          marginLeft: 12,
-                                        }}>
-                                        {item.foodName}
-                                      </Text>
-                                      <Text style={{width: '8%'}}>
-                                        {item.quantity}
-                                      </Text>
-                                      <View
-                                        style={{
-                                          flexDirection: 'row',
-                                          width: '39%',
-                                          justifyContent: 'space-between',
-                                          alignItems: 'center',
-                                        }}>
-                                        {tags[item.foodStatus]}
-                                        {item.foodStatus === 'QUEUE' && (
-                                          <TouchableOpacity
-                                            style={{
-                                              backgroundColor: '#fdf3f2',
-                                              width: 30,
-                                              height: 30,
-                                              alignItems: 'center',
-                                              justifyContent: 'center',
-                                              borderRadius: 8,
-                                            }}
-                                            onPress={() => {
-                                              this.setState({
-                                                visible: true,
-                                                deleteItemId: item.id,
-                                              });
-                                            }}>
-                                            <FontAwesome5
-                                              name="trash-alt"
-                                              color="#e2574c"
-                                              solid
-                                            />
-                                          </TouchableOpacity>
-                                        )}
-                                      </View>
+                                      {tags[item.foodStatus]}
+                                      {item.foodStatus === 'QUEUE' && (
+                                        <TouchableOpacity
+                                          style={{
+                                            backgroundColor: '#fdf3f2',
+                                            width: 30,
+                                            height: 30,
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            borderRadius: 8,
+                                          }}
+                                          onPress={() => {
+                                            this.setState({
+                                              visible: true,
+                                              deleteItemId: item.id,
+                                            });
+                                          }}>
+                                          <FontAwesome5
+                                            name="trash-alt"
+                                            color="#e2574c"
+                                            solid
+                                          />
+                                        </TouchableOpacity>
+                                      )}
                                     </View>
-                                  )}
+                                  </View>
                                 </>
                               );
                             }}
@@ -532,23 +532,36 @@ class OrderScreen extends React.Component {
                     flexDirection: 'row',
                     justifyContent: 'space-evenly',
                   }}>
+                  <TextInput
+                    value={this.state.reason}
+                    style={{
+                      width: '70%',
+                      height: 40,
+                      backgroundColor: '#f3f3f3',
+                      color: '#0f0f0f',
+                      borderRadius: 50,
+                      paddingLeft: 12,
+                    }}
+                    onChangeText={text => this.setState({reason: text})}
+                    placeholder="Reason..."
+                  />
                   <TouchableOpacity
                     style={styles.modalBtn}
                     onPress={async () => {
                       this.setState({loading: true});
                       console.log(this.state.deleteItemId + ' DELETED');
-                      fetch(
-                        'http://foodcout.ap-southeast-1.elasticbeanstalk.com/cart/update?cartItemId=' +
-                          this.state.deleteItemId +
-                          '&status=CANCEL',
-                        {
-                          method: 'PUT',
-                          headers: {
-                            Accept: 'application/json',
-                            'Content-Type': 'application/json',
-                          },
+                      const cancelCartItem = {
+                        id: this.state.deleteItemId,
+                        reason: this.state.reason,
+                      };
+                      fetch('http://192.168.1.102:8080/cart/cancel', {
+                        method: 'PUT',
+                        headers: {
+                          Accept: 'application/json',
+                          'Content-Type': 'application/json',
                         },
-                      ).catch(error => {
+                        body: JSON.stringify(cancelCartItem),
+                      }).catch(error => {
                         console.log(error);
                       });
 
