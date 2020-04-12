@@ -12,6 +12,7 @@ import {
   RefreshControl,
   ActivityIndicator,
   Modal,
+  ToastAndroid,
 } from 'react-native';
 import Carousel from 'react-native-snap-carousel';
 import StarRating from 'react-native-star-rating';
@@ -107,10 +108,10 @@ class StallListScreen extends React.Component {
 
   addToCart = async () => {
     if (this.state.cart === null) {
+      this.setState({visible: false});
       ToastAndroid.show('Please login to order our food.', ToastAndroid.SHORT);
-      this.props.navigation.navigate('ProfileTab', {
-        foodstall: this.props.navigation.state.params.foodstall,
-      });
+      this.props.navigation.navigate('ProfileTab');
+      console.log('cart here', this.state.cart);
     } else {
       const tmpCart = this.state.cart;
       for (let i = 0; i < this.state.quantity; i++) {
@@ -140,6 +141,11 @@ class StallListScreen extends React.Component {
       this.setState({loading: false});
     });
     this.listener = EventRegister.addEventListener('updateCart', async () => {
+      this.setState({loading: true});
+      await this.initData();
+      this.setState({loading: false});
+    });
+    this.listener = EventRegister.addEventListener('finishOrder', async () => {
       this.setState({loading: true});
       await this.initData();
       this.setState({loading: false});
@@ -399,46 +405,34 @@ class StallListScreen extends React.Component {
               }}
               visible={this.state.visible}>
               <View style={styles.modal}>
-                <Text style={{fontWeight: 'bold', fontSize: 18}}>
+                <Text style={{fontWeight: 'bold', fontSize: 20}}>
                   Add to Cart
                 </Text>
                 <View
                   style={{
                     flexDirection: 'row',
-                    borderTopWidth: 1,
-                    borderColor: '#dadada',
                     paddingVertical: 12,
-                    paddingRight: 80,
+                    alignSelf: 'flex-start',
+                    alignItems: 'center',
                   }}>
                   <Image
                     source={{uri: this.state.selectedFood.foodImage}}
                     style={{
-                      width: 100,
-                      height: 100,
-                      marginRight: 'auto',
-                      marginTop: 15,
+                      width: 70,
+                      height: 70,
+                      marginRight: 12,
                     }}
                   />
                   <View>
                     <Text
                       style={{
-                        fontSize: 20,
+                        fontSize: 18,
                         fontWeight: 'bold',
                         marginBottom: 4,
-                        marginLeft: 'auto',
+                        width: '70%',
                       }}>
                       {this.state.selectedFood.foodName}
                     </Text>
-                    {/* <StarRating
-                      disabled
-                      halfStarEnabled
-                      starSize={15}
-                      fullStarColor="#ffdd00"
-                      halfStarColor="#ffdd00"
-                      emptyStarColor="#ffdd00"
-                      rating={item.foodRating}
-                      containerStyle={styles.stars}
-                    /> */}
                     <Text
                       numberOfLines={2}
                       ellipsizeMode="tail"
@@ -451,7 +445,6 @@ class StallListScreen extends React.Component {
                     </Text>
                     {this.state.selectedFood.retailPrice == 0 ? (
                       <NumberFormat
-                        style={{marginRight: 'auto'}}
                         value={this.state.selectedFood.originPrice}
                         thousandSeparator={true}
                         defaultValue={0}
@@ -460,41 +453,14 @@ class StallListScreen extends React.Component {
                         renderText={value => <Text>{value}</Text>}
                       />
                     ) : (
-                      <>
-                        <NumberFormat
-                          style={{marginRight: 'auto'}}
-                          value={this.state.selectedFood.originPrice}
-                          thousandSeparator={true}
-                          defaultValue={0}
-                          suffix={'VND'}
-                          displayType={'text'}
-                          renderText={value => (
-                            <Text
-                              style={{
-                                textDecorationLine: 'line-through',
-                                textDecorationStyle: 'solid',
-                              }}>
-                              {value}
-                            </Text>
-                          )}
-                        />
-                        <NumberFormat
-                          style={{marginRight: 'auto'}}
-                          value={this.state.selectedFood.retailPrice}
-                          thousandSeparator={true}
-                          defaultValue={0}
-                          suffix={'VND'}
-                          displayType={'text'}
-                          renderText={value => (
-                            <Text
-                              style={{
-                                color: 'red',
-                              }}>
-                              {value}
-                            </Text>
-                          )}
-                        />
-                      </>
+                      <NumberFormat
+                        value={this.state.selectedFood.retailPrice}
+                        thousandSeparator={true}
+                        defaultValue={0}
+                        suffix={'VND'}
+                        displayType={'text'}
+                        renderText={value => <Text>{value}</Text>}
+                      />
                     )}
                   </View>
                 </View>
@@ -680,7 +646,9 @@ const styles = StyleSheet.create({
     marginVertical: 200,
     backgroundColor: 'white',
     borderRadius: 20,
-    padding: 24,
+    paddingLeft: 16,
+    paddingVertical: 12,
+    // paddingRight: 50,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,

@@ -113,6 +113,9 @@ class StallDetailScreen extends React.Component {
     this.listener = EventRegister.addEventListener('updateCart', async () => {
       await this.loadData();
     });
+    this.listener = EventRegister.addEventListener('finishOrder', async () => {
+      await this.loadData();
+    });
   };
 
   componentWillUnmount = async () => {

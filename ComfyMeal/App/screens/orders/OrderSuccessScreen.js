@@ -19,6 +19,12 @@ class OrderSuccessScreen extends React.Component {
     this.setState({cart: cart, customerWalletId: wallet.walletId});
   };
 
+  componentWillUnmount = async () => {
+    const cart = [];
+    await AsyncStorage.setItem('cart', JSON.stringify(cart));
+    EventRegister.emit('finishOrder');
+  };
+
   render() {
     return (
       <View style={styles.container}>

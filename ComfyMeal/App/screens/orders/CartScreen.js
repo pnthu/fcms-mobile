@@ -119,12 +119,6 @@ class CartScreen extends React.Component {
         },
         body: JSON.stringify(this.state.cartDto),
       });
-
-      // ToastAndroid.showWithGravity(
-      //   'Your order has been purchased successfully!',
-      //   ToastAndroid.LONG,
-      //   ToastAndroid.CENTER,
-      // );
       this.props.navigation.navigate('OrderSuccess');
     }
   };

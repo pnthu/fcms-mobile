@@ -10,13 +10,14 @@ import {
   ToastAndroid,
   ActivityIndicator,
   ScrollView,
+  TextInput,
 } from 'react-native';
 import {Tabs, Tab, Accordion} from 'native-base';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import AsyncStorage from '@react-native-community/async-storage';
 import NumberFormat from 'react-number-format';
-import {TextInput} from 'react-native-gesture-handler';
 
 const tags = {
   QUEUE: (
@@ -73,17 +74,26 @@ const tags = {
         paddingHorizontal: 8,
         paddingVertical: 4,
         borderRadius: 8,
-        backgroundColor: '#e0ebfd',
+        backgroundColor: '#fdf3f2',
         alignSelf: 'center',
       }}>
-      <Text style={{color: 'red'}}>Cancelled</Text>
+      <Text style={{color: '#dc3e31'}}>Cancelled</Text>
     </View>
   ),
 };
 
+const reasons = [
+  {reason: 'I want to change other foods.', selected: false},
+  {reason: 'I am full now.', selected: false},
+  {reason: "I want to change food's quantity.", selected: false},
+  {reason: 'I have waited for too long.', selected: false},
+  {reason: 'Other: ', selected: false},
+];
+
 class OrderScreen extends React.Component {
   constructor(props) {
     super(props);
+    this.textInput = {};
     this.state = {
       shoppingCart: [],
       historyOrder: [],
@@ -96,6 +106,7 @@ class OrderScreen extends React.Component {
       reason: '',
       refreshCurrent: false,
       refreshHistory: false,
+      reasonsData: [],
     };
   }
 
@@ -113,6 +124,7 @@ class OrderScreen extends React.Component {
     this.setState({
       walletId: customerWallet.walletId,
       shoppingCart: currentShoppingCart,
+      reasonsData: reasons,
     });
     await this.fetchCurrentOrder();
     await this.fetchHistoryOrder();
@@ -121,7 +133,7 @@ class OrderScreen extends React.Component {
 
   fetchCurrentOrder = () => {
     fetch(
-      `http://192.168.1.102:8080/cart/${
+      `http://foodcout.ap-southeast-1.elasticbeanstalk.com/cart/${
         this.state.walletId
       }/in-progress/detail`,
       {
@@ -135,7 +147,7 @@ class OrderScreen extends React.Component {
       .then(Response => Response.json())
       .then(currentOrder => {
         this.setState({currentCart: currentOrder});
-        console.log('current', this.state.currentCart);
+        console.log('current', JSON.stringify(this.state.currentCart));
       })
       .catch(error => {
         console.log(error);
@@ -360,6 +372,20 @@ class OrderScreen extends React.Component {
     this.setState({refreshHistory: false});
   };
 
+  setSelectedReason = index => {
+    var tmpData = this.state.reasonsData;
+    for (let i = 0; i < tmpData.length; i++) {
+      tmpData[i].selected = false;
+    }
+    tmpData[index].selected = true;
+    if (index === 4 && this.textInput instanceof TextInput) {
+      this.textInput.focus();
+    } else {
+      this.setState({reason: tmpData[index].reason});
+    }
+    this.setState({reasonsData: tmpData});
+  };
+
   render() {
     console.log('cart', this.state.currentCart);
     return (
@@ -524,44 +550,92 @@ class OrderScreen extends React.Component {
                   style={{fontWeight: 'bold', fontSize: 18, marginBottom: 8}}>
                   Cancel Cart Item
                 </Text>
-                <Text style={{textAlign: 'center'}}>
-                  Do you really want to cancel this cart item?
+                <Text
+                  style={{textAlign: 'center', marginBottom: 8, fontSize: 16}}>
+                  Tell us why you want to cancel your order:
                 </Text>
+                <FlatList
+                  data={this.state.reasonsData}
+                  showsVerticalScrollIndicator={false}
+                  numColumns={1}
+                  keyExtractor={(item, index) => index.toString()}
+                  renderItem={({item, index}) => {
+                    return (
+                      <View
+                        key={index}
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                        }}>
+                        {item.selected === true ? (
+                          <MaterialIcons
+                            name="radio-button-checked"
+                            style={{
+                              color: '#ee7739',
+                              marginRight: 6,
+                              fontSize: 18,
+                            }}
+                          />
+                        ) : (
+                          <MaterialIcons
+                            name="radio-button-unchecked"
+                            style={{
+                              color: '#ababab',
+                              marginRight: 6,
+                              fontSize: 18,
+                            }}
+                            onPress={() => {
+                              this.setSelectedReason(index);
+                            }}
+                          />
+                        )}
+                        <Text style={{fontSize: 18}}>{item.reason}</Text>
+                        {item.reason === 'Other: ' && (
+                          <TextInput
+                            ref={input => (this.textInput = input)}
+                            style={{
+                              borderBottomWidth: 1,
+                              borderColor: 'black',
+                              height: 20,
+                              width: '100%',
+                            }}
+                            value={
+                              this.state.reasonsData[4].selected === true &&
+                              this.state.reason
+                            }
+                            onChangeText={text => this.setState({reason: text})}
+                            onTouchStart={() => this.setSelectedReason(index)}
+                          />
+                        )}
+                      </View>
+                    );
+                  }}
+                />
                 <View
                   style={{
                     flexDirection: 'row',
                     justifyContent: 'space-evenly',
                   }}>
-                  <TextInput
-                    value={this.state.reason}
-                    style={{
-                      width: '70%',
-                      height: 40,
-                      backgroundColor: '#f3f3f3',
-                      color: '#0f0f0f',
-                      borderRadius: 50,
-                      paddingLeft: 12,
-                    }}
-                    onChangeText={text => this.setState({reason: text})}
-                    placeholder="Reason..."
-                  />
                   <TouchableOpacity
                     style={styles.modalBtn}
                     onPress={async () => {
                       this.setState({loading: true});
-                      console.log(this.state.deleteItemId + ' DELETED');
+                      console.log(this.state.reason + ' reason');
                       const cancelCartItem = {
                         id: this.state.deleteItemId,
-                        reason: this.state.reason,
+                        reason: `Customer: ${this.state.reason}`,
                       };
-                      fetch('http://192.168.1.102:8080/cart/cancel', {
-                        method: 'PUT',
-                        headers: {
-                          Accept: 'application/json',
-                          'Content-Type': 'application/json',
+                      fetch(
+                        'http://foodcout.ap-southeast-1.elasticbeanstalk.com/cart/cancel',
+                        {
+                          method: 'PUT',
+                          headers: {
+                            Accept: 'application/json',
+                            'Content-Type': 'application/json',
+                          },
+                          body: JSON.stringify(cancelCartItem),
                         },
-                        body: JSON.stringify(cancelCartItem),
-                      }).catch(error => {
+                      ).catch(error => {
                         console.log(error);
                       });
 
