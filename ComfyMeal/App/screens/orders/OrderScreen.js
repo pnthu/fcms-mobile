@@ -316,6 +316,22 @@ class OrderScreen extends React.Component {
       <>
         {this.state.historyOrderDetail instanceof Array &&
           this.state.historyOrderDetail.map((detail, index) => {
+            var reason = '';
+            if (detail.reason != null) {
+              if (detail.reason.search('Restaurant: ') != -1) {
+                reason +=
+                  detail.foodStallName +
+                  ' has ' +
+                  detail.reason.slice(12).toLowerCase();
+              } else if (detail.reason.search('Customer: ') != -1) {
+                reason +=
+                  'You has cancelled because ' +
+                  detail.reason
+                    .slice(10)
+                    .replace('I', 'you')
+                    .toLowerCase();
+              }
+            }
             return (
               <View
                 key={index}
@@ -350,6 +366,12 @@ class OrderScreen extends React.Component {
                     Quantity: {detail.quantity}
                   </Text>
                 </View>
+                {detail.reason != null && (
+                  <>
+                    <Text style={{color: 'red'}}>This has been CANCELLED.</Text>
+                    <Text>Reason: {reason}</Text>
+                  </>
+                )}
                 <Text style={{fontSize: 13, fontWeight: '600'}}>
                   Purchase: {detail.foodName} at {detail.foodStallName}
                 </Text>
