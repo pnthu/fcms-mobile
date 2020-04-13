@@ -399,125 +399,127 @@ class StallListScreen extends React.Component {
             </View>
             <Modal
               transparent
-              animationType="slide"
+              animationType="fade"
               onRequestClose={() => {
                 this.setState({visible: false});
               }}
               visible={this.state.visible}>
-              <View style={styles.modal}>
-                <Text style={{fontWeight: 'bold', fontSize: 20}}>
-                  Add to Cart
-                </Text>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    paddingVertical: 12,
-                    alignSelf: 'flex-start',
-                    alignItems: 'center',
-                  }}>
-                  <Image
-                    source={{uri: this.state.selectedFood.foodImage}}
+              <View style={{backgroundColor: 'rgba(0,0,0,0.6)'}}>
+                <View style={styles.modal}>
+                  <Text style={{fontWeight: 'bold', fontSize: 20}}>
+                    Add to Cart
+                  </Text>
+                  <View
                     style={{
-                      width: 70,
-                      height: 70,
-                      marginRight: 12,
-                    }}
-                  />
-                  <View>
-                    <Text
+                      flexDirection: 'row',
+                      paddingVertical: 12,
+                      alignSelf: 'flex-start',
+                      alignItems: 'center',
+                    }}>
+                    <Image
+                      source={{uri: this.state.selectedFood.foodImage}}
                       style={{
-                        fontSize: 18,
-                        fontWeight: 'bold',
-                        marginBottom: 4,
-                        width: '70%',
-                      }}>
-                      {this.state.selectedFood.foodName}
-                    </Text>
-                    <Text
-                      numberOfLines={2}
-                      ellipsizeMode="tail"
-                      style={{
-                        color: '#808080',
-                        fontWeight: '200',
-                        marginBottom: 4,
-                      }}>
-                      {this.state.selectedFood.foodDescription}
-                    </Text>
-                    {this.state.selectedFood.retailPrice == 0 ? (
-                      <NumberFormat
-                        value={this.state.selectedFood.originPrice}
-                        thousandSeparator={true}
-                        defaultValue={0}
-                        suffix={'VND'}
-                        displayType={'text'}
-                        renderText={value => <Text>{value}</Text>}
-                      />
-                    ) : (
-                      <NumberFormat
-                        value={this.state.selectedFood.retailPrice}
-                        thousandSeparator={true}
-                        defaultValue={0}
-                        suffix={'VND'}
-                        displayType={'text'}
-                        renderText={value => <Text>{value}</Text>}
-                      />
-                    )}
+                        width: 70,
+                        height: 70,
+                        marginRight: 12,
+                      }}
+                    />
+                    <View>
+                      <Text
+                        style={{
+                          fontSize: 18,
+                          fontWeight: 'bold',
+                          marginBottom: 4,
+                          width: '70%',
+                        }}>
+                        {this.state.selectedFood.foodName}
+                      </Text>
+                      <Text
+                        numberOfLines={2}
+                        ellipsizeMode="tail"
+                        style={{
+                          color: '#808080',
+                          fontWeight: '200',
+                          marginBottom: 4,
+                        }}>
+                        {this.state.selectedFood.foodDescription}
+                      </Text>
+                      {this.state.selectedFood.retailPrice == 0 ? (
+                        <NumberFormat
+                          value={this.state.selectedFood.originPrice}
+                          thousandSeparator={true}
+                          defaultValue={0}
+                          suffix={'VND'}
+                          displayType={'text'}
+                          renderText={value => <Text>{value}</Text>}
+                        />
+                      ) : (
+                        <NumberFormat
+                          value={this.state.selectedFood.retailPrice}
+                          thousandSeparator={true}
+                          defaultValue={0}
+                          suffix={'VND'}
+                          displayType={'text'}
+                          renderText={value => <Text>{value}</Text>}
+                        />
+                      )}
+                    </View>
                   </View>
-                </View>
-                <View style={styles.itemQuantity}>
-                  <FontAwesome5
-                    name="minus-circle"
-                    onPress={() => {
-                      if (this.state.quantity !== 1) {
-                        this.setState({quantity: --this.state.quantity});
-                      }
-                    }}
-                    style={styles.btnAddRemove}
-                  />
-                  <Text style={{fontSize: 17}}>{this.state.quantity}</Text>
-                  <FontAwesome5
-                    name="plus-circle"
-                    onPress={() => {
-                      this.setState({quantity: ++this.state.quantity});
-                    }}
-                    style={styles.btnAddRemove}
-                  />
-                </View>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-evenly',
-                  }}>
-                  <TouchableOpacity
-                    style={styles.modalBtn}
-                    onPress={async () => {
-                      await this.addToCart();
+                  <View style={styles.itemQuantity}>
+                    <FontAwesome5
+                      name="minus-circle"
+                      onPress={() => {
+                        if (this.state.quantity !== 1) {
+                          this.setState({quantity: --this.state.quantity});
+                        }
+                      }}
+                      style={styles.btnAddRemove}
+                    />
+                    <Text style={{fontSize: 17}}>{this.state.quantity}</Text>
+                    <FontAwesome5
+                      name="plus-circle"
+                      onPress={() => {
+                        this.setState({quantity: ++this.state.quantity});
+                      }}
+                      style={styles.btnAddRemove}
+                    />
+                  </View>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-evenly',
                     }}>
-                    <Text
-                      style={{
-                        color: '#0ec648',
-                        textAlign: 'center',
-                        fontWeight: 'bold',
-                        fontSize: 18,
+                    <TouchableOpacity
+                      style={styles.modalBtn}
+                      onPress={async () => {
+                        await this.addToCart();
                       }}>
-                      Add to Cart
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.modalBtn}
-                    onPress={() => {
-                      this.setState({visible: false});
-                    }}>
-                    <Text
-                      style={{
-                        color: '#4f5e71',
-                        textAlign: 'center',
-                        fontWeight: 'bold',
-                        fontSize: 18,
+                      <Text
+                        style={{
+                          color: '#0ec648',
+                          textAlign: 'center',
+                          fontWeight: 'bold',
+                          fontSize: 18,
+                        }}>
+                        Add to Cart
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.modalBtn}
+                      onPress={() => {
+                        this.setState({visible: false});
                       }}>
-                      Cancel
-                    </Text>
-                  </TouchableOpacity>
+                      <Text
+                        style={{
+                          color: '#4f5e71',
+                          textAlign: 'center',
+                          fontWeight: 'bold',
+                          fontSize: 18,
+                        }}>
+                        Cancel
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </View>
             </Modal>
@@ -648,7 +650,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingLeft: 16,
     paddingVertical: 12,
-    // paddingRight: 50,
+    paddingRight: 50,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,

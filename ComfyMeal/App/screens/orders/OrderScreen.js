@@ -543,7 +543,6 @@ class OrderScreen extends React.Component {
                                       {item.foodStatus === 'CANCEL' && (
                                         <TouchableOpacity
                                           style={{
-                                            backgroundColor: '#fdf3f2',
                                             width: 30,
                                             height: 30,
                                             alignItems: 'center',
@@ -557,9 +556,10 @@ class OrderScreen extends React.Component {
                                             });
                                           }}>
                                           <FontAwesome5
-                                            name="info"
-                                            color="#000000"
+                                            name="info-circle"
+                                            color="#ee7739"
                                             solid
+                                            size={22}
                                           />
                                         </TouchableOpacity>
                                       )}
@@ -605,117 +605,123 @@ class OrderScreen extends React.Component {
                 this.setState({visible: false});
               }}
               visible={this.state.visible}>
-              <View style={styles.modal}>
-                <Text
-                  style={{fontWeight: 'bold', fontSize: 18, marginBottom: 8}}>
-                  Cancel Cart Item
-                </Text>
-                <Text
-                  style={{textAlign: 'center', marginBottom: 8, fontSize: 16}}>
-                  Tell us why you want to cancel your order:
-                </Text>
-                <FlatList
-                  data={this.state.reasonsData}
-                  showsVerticalScrollIndicator={false}
-                  numColumns={1}
-                  keyExtractor={(item, index) => index.toString()}
-                  renderItem={({item, index}) => {
-                    return (
-                      <View
-                        key={index}
-                        style={{
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                        }}>
-                        {item.selected === true ? (
-                          <MaterialIcons
-                            name="radio-button-checked"
-                            style={{
-                              color: '#ee7739',
-                              marginRight: 6,
-                              fontSize: 18,
-                            }}
-                          />
-                        ) : (
-                          <MaterialIcons
-                            name="radio-button-unchecked"
-                            style={{
-                              color: '#ababab',
-                              marginRight: 6,
-                              fontSize: 18,
-                            }}
-                            onPress={() => {
-                              this.setSelectedReason(index);
-                            }}
-                          />
-                        )}
-                        <Text style={{fontSize: 18}}>{item.reason}</Text>
-                      </View>
-                    );
-                  }}
-                />
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-evenly',
-                  }}>
-                  <TouchableOpacity
-                    style={styles.modalBtn}
-                    onPress={async () => {
-                      this.setState({loading: true});
-                      console.log(this.state.reason + ' reason');
-                      const cancelCartItem = {
-                        id: this.state.deleteItemId,
-                        reason: `Customer: ${this.state.reason}`,
-                      };
-                      fetch(
-                        'http://foodcout.ap-southeast-1.elasticbeanstalk.com/cart/cancel',
-                        {
-                          method: 'PUT',
-                          headers: {
-                            Accept: 'application/json',
-                            'Content-Type': 'application/json',
-                          },
-                          body: JSON.stringify(cancelCartItem),
-                        },
-                      ).catch(error => {
-                        console.log(error);
-                      });
-
-                      this.setState({visible: false});
-                      ToastAndroid.showWithGravity(
-                        'Your food has been cancelled successfully',
-                        ToastAndroid.SHORT,
-                        ToastAndroid.CENTER,
+              <View style={{backgroundColor: 'rgba(0,0,0,0.6)'}}>
+                <View style={styles.modal}>
+                  <Text
+                    style={{fontWeight: 'bold', fontSize: 20, marginBottom: 8}}>
+                    Cancel Cart Item
+                  </Text>
+                  <Text
+                    style={{
+                      textAlign: 'center',
+                      marginBottom: 8,
+                      fontSize: 16,
+                    }}>
+                    Tell us why you want to cancel your order:
+                  </Text>
+                  <FlatList
+                    data={this.state.reasonsData}
+                    showsVerticalScrollIndicator={false}
+                    numColumns={1}
+                    keyExtractor={(item, index) => index.toString()}
+                    renderItem={({item, index}) => {
+                      return (
+                        <View
+                          key={index}
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                          }}>
+                          {item.selected === true ? (
+                            <MaterialIcons
+                              name="radio-button-checked"
+                              style={{
+                                color: '#ee7739',
+                                marginRight: 6,
+                                fontSize: 18,
+                              }}
+                            />
+                          ) : (
+                            <MaterialIcons
+                              name="radio-button-unchecked"
+                              style={{
+                                color: '#ababab',
+                                marginRight: 6,
+                                fontSize: 16,
+                              }}
+                              onPress={() => {
+                                this.setSelectedReason(index);
+                              }}
+                            />
+                          )}
+                          <Text style={{fontSize: 18}}>{item.reason}</Text>
+                        </View>
                       );
-                      await this.fetchCurrentOrder();
-                      this.setState({loading: false});
+                    }}
+                  />
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-evenly',
                     }}>
-                    <Text
-                      style={{
-                        color: '#0ec648',
-                        textAlign: 'center',
-                        fontWeight: 'bold',
-                        fontSize: 18,
+                    <TouchableOpacity
+                      style={styles.modalBtn}
+                      onPress={async () => {
+                        this.setState({loading: true});
+                        console.log(this.state.reason + ' reason');
+                        const cancelCartItem = {
+                          id: this.state.deleteItemId,
+                          reason: `Customer: ${this.state.reason}`,
+                        };
+                        fetch(
+                          'http://foodcout.ap-southeast-1.elasticbeanstalk.com/cart/cancel',
+                          {
+                            method: 'PUT',
+                            headers: {
+                              Accept: 'application/json',
+                              'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(cancelCartItem),
+                          },
+                        ).catch(error => {
+                          console.log(error);
+                        });
+
+                        this.setState({visible: false});
+                        ToastAndroid.showWithGravity(
+                          'Your food has been cancelled successfully',
+                          ToastAndroid.SHORT,
+                          ToastAndroid.CENTER,
+                        );
+                        await this.fetchCurrentOrder();
+                        this.setState({loading: false});
                       }}>
-                      Cancel Item
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.modalBtn}
-                    onPress={() => {
-                      this.setState({visible: false});
-                    }}>
-                    <Text
-                      style={{
-                        color: '#4f5e71',
-                        textAlign: 'center',
-                        fontWeight: 'bold',
-                        fontSize: 18,
+                      <Text
+                        style={{
+                          color: '#0ec648',
+                          textAlign: 'center',
+                          fontWeight: 'bold',
+                          fontSize: 18,
+                        }}>
+                        Cancel Item
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.modalBtn}
+                      onPress={() => {
+                        this.setState({visible: false});
                       }}>
-                      Dismiss
-                    </Text>
-                  </TouchableOpacity>
+                      <Text
+                        style={{
+                          color: '#4f5e71',
+                          textAlign: 'center',
+                          fontWeight: 'bold',
+                          fontSize: 18,
+                        }}>
+                        Dismiss
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </View>
             </Modal>
@@ -726,44 +732,47 @@ class OrderScreen extends React.Component {
                 this.setState({infoVisible: false});
               }}
               visible={this.state.infoVisible}>
-              <View style={styles.modal}>
-                <Text
-                  style={{
-                    fontWeight: 'bold',
-                    fontSize: 18,
-                    marginBottom: 8,
-                    textAlign: 'center',
-                  }}>
-                  Cancel Reason
-                </Text>
-                <Text style={{textAlign: 'center', marginBottom: 12}}>
-                  This order has been cancelled because{' '}
-                  {this.state.selectedItemReason}
-                </Text>
-                <Text
-                  style={{
-                    fontStyle: 'italic',
-                    color: '#a0a0a0',
-                    fontSize: 14,
-                    marginBottom: 12,
-                  }}>
-                  *Note: Your payment has been given back. Please refresh your
-                  wallet.
-                </Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    this.setState({infoVisible: false});
-                  }}>
+              <View
+                style={{backgroundColor: 'rgba(0,0,0,0.6)', height: '100%'}}>
+                <View style={styles.modal}>
                   <Text
                     style={{
-                      color: '#0ec648',
-                      textAlign: 'center',
                       fontWeight: 'bold',
                       fontSize: 18,
+                      marginBottom: 8,
+                      textAlign: 'center',
                     }}>
-                    OK
+                    Cancel Reason
                   </Text>
-                </TouchableOpacity>
+                  <Text style={{textAlign: 'center', marginBottom: 12}}>
+                    This order has been cancelled because{' '}
+                    {this.state.selectedItemReason}
+                  </Text>
+                  <Text
+                    style={{
+                      fontStyle: 'italic',
+                      color: '#a0a0a0',
+                      fontSize: 14,
+                      marginBottom: 12,
+                    }}>
+                    *Your payment has been given back. Please refresh your
+                    wallet.
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      this.setState({infoVisible: false});
+                    }}>
+                    <Text
+                      style={{
+                        color: '#0ec648',
+                        textAlign: 'center',
+                        fontWeight: 'bold',
+                        fontSize: 18,
+                      }}>
+                      OK
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </Modal>
           </>
@@ -809,10 +818,10 @@ const styles = StyleSheet.create({
   },
   modal: {
     marginHorizontal: 20,
-    marginVertical: 200,
+    marginVertical: 150,
     backgroundColor: 'white',
     borderRadius: 20,
-    padding: 24,
+    padding: 16,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,

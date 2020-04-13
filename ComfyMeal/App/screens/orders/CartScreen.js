@@ -259,40 +259,42 @@ class CartScreen extends React.Component {
             this.setState({visible: false});
           }}
           visible={this.state.visible}>
-          <View style={styles.modal}>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                marginBottom: 8,
-              }}>
-              <AntDesign
-                name="exclamationcircleo"
-                style={{color: 'red', marginRight: 12, fontSize: 18}}
-              />
-              <Text style={{fontWeight: 'bold', fontSize: 18}}>
-                Order Failed
-              </Text>
-            </View>
-            <Text style={{textAlign: 'center'}}>
-              You don't have enough cash in your wallet. Please contact the
-              cashier for more details.
-            </Text>
-            <TouchableOpacity
-              style={styles.modalBtn}
-              onPress={() => {
-                this.setState({visible: false});
-              }}>
-              <Text
+          <View style={{backgroundColor: 'rgba(0,0,0,0.6)'}}>
+            <View style={styles.modal}>
+              <View
                 style={{
-                  color: '#0ec648',
-                  textAlign: 'center',
-                  fontWeight: 'bold',
-                  fontSize: 18,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginBottom: 8,
                 }}>
-                OK
+                <AntDesign
+                  name="exclamationcircleo"
+                  style={{color: 'red', marginRight: 12, fontSize: 18}}
+                />
+                <Text style={{fontWeight: 'bold', fontSize: 18}}>
+                  Order Failed
+                </Text>
+              </View>
+              <Text style={{textAlign: 'center'}}>
+                You don't have enough cash in your wallet. Please contact the
+                cashier for more details.
               </Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalBtn}
+                onPress={() => {
+                  this.setState({visible: false});
+                }}>
+                <Text
+                  style={{
+                    color: '#0ec648',
+                    textAlign: 'center',
+                    fontWeight: 'bold',
+                    fontSize: 18,
+                  }}>
+                  OK
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </Modal>
       </>
