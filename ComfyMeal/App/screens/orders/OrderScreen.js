@@ -211,7 +211,7 @@ class OrderScreen extends React.Component {
         {item.cartStatus === 'CANCEL' && (
           <View style={{flexDirection: 'row'}}>
             <FontAwesome
-              name="warning"
+              name="close"
               style={{
                 fontSize: 18,
                 color: 'red',
@@ -558,7 +558,7 @@ class OrderScreen extends React.Component {
                                           }}>
                                           <FontAwesome5
                                             name="info"
-                                            color="#e2574c"
+                                            color="#000000"
                                             solid
                                           />
                                         </TouchableOpacity>
