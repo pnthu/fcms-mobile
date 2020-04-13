@@ -10,7 +10,6 @@ import {
   ToastAndroid,
   ActivityIndicator,
   ScrollView,
-  TextInput,
 } from 'react-native';
 import {Tabs, Tab, Accordion} from 'native-base';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
@@ -65,7 +64,7 @@ const tags = {
         alignSelf: 'center',
         backgroundColor: '#2ad25f',
       }}>
-      <Text style={{color: 'white'}}>Deliveried</Text>
+      <Text style={{color: 'white'}}>Delivered</Text>
     </View>
   ),
   CANCEL: (
@@ -87,13 +86,12 @@ const reasons = [
   {reason: 'I am full now.', selected: false},
   {reason: "I want to change food's quantity.", selected: false},
   {reason: 'I have waited for too long.', selected: false},
-  {reason: 'Other: ', selected: false},
+  {reason: 'Other reasons.', selected: false},
 ];
 
 class OrderScreen extends React.Component {
   constructor(props) {
     super(props);
-    this.textInput = {};
     this.state = {
       shoppingCart: [],
       historyOrder: [],
@@ -101,8 +99,10 @@ class OrderScreen extends React.Component {
       walletId: 0,
       currentCart: [],
       visible: false,
+      infoVisible: false,
       loading: true,
       deleteItemId: 0,
+      selectedItemReason: '',
       reason: '',
       refreshCurrent: false,
       refreshHistory: false,
@@ -400,12 +400,27 @@ class OrderScreen extends React.Component {
       tmpData[i].selected = false;
     }
     tmpData[index].selected = true;
-    if (index === 4 && this.textInput instanceof TextInput) {
-      this.textInput.focus();
-    } else {
-      this.setState({reason: tmpData[index].reason});
-    }
+    this.setState({reason: tmpData[index].reason});
     this.setState({reasonsData: tmpData});
+  };
+
+  replaceString = string => {
+    var result = '';
+    const newStr = new String(string);
+    if (newStr instanceof String) {
+      console.log('here', string);
+      if (newStr.includes('Restaurant: ')) {
+        result = newStr.replace('Restaurant: Sold', 'the restaurant has sold');
+      } else if (newStr.includes('Customer: I am')) {
+        result = newStr.replace('Customer: I am', 'you are');
+      } else if (newStr.includes('Customer: I')) {
+        result = newStr.replace('Customer: I', 'You');
+      } else if (newStr.includes('Other reasons.')) {
+        result = newStr.replace('Other reasons.', 'of other reason.');
+      }
+    }
+    console.log('result', result);
+    this.setState({selectedItemReason: result});
   };
 
   render() {
@@ -525,6 +540,29 @@ class OrderScreen extends React.Component {
                                           />
                                         </TouchableOpacity>
                                       )}
+                                      {item.foodStatus === 'CANCEL' && (
+                                        <TouchableOpacity
+                                          style={{
+                                            backgroundColor: '#fdf3f2',
+                                            width: 30,
+                                            height: 30,
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            borderRadius: 8,
+                                          }}
+                                          onPress={() => {
+                                            this.replaceString(item.reason);
+                                            this.setState({
+                                              infoVisible: true,
+                                            });
+                                          }}>
+                                          <FontAwesome5
+                                            name="info"
+                                            color="#e2574c"
+                                            solid
+                                          />
+                                        </TouchableOpacity>
+                                      )}
                                     </View>
                                   </View>
                                 </>
@@ -612,23 +650,6 @@ class OrderScreen extends React.Component {
                           />
                         )}
                         <Text style={{fontSize: 18}}>{item.reason}</Text>
-                        {item.reason === 'Other: ' && (
-                          <TextInput
-                            ref={input => (this.textInput = input)}
-                            style={{
-                              borderBottomWidth: 1,
-                              borderColor: 'black',
-                              height: 20,
-                              width: '100%',
-                            }}
-                            value={
-                              this.state.reasonsData[4].selected === true &&
-                              this.state.reason
-                            }
-                            onChangeText={text => this.setState({reason: text})}
-                            onTouchStart={() => this.setSelectedReason(index)}
-                          />
-                        )}
                       </View>
                     );
                   }}
@@ -672,12 +693,12 @@ class OrderScreen extends React.Component {
                     }}>
                     <Text
                       style={{
-                        color: '#e2574c',
+                        color: '#0ec648',
                         textAlign: 'center',
                         fontWeight: 'bold',
                         fontSize: 18,
                       }}>
-                      Yes
+                      Cancel Item
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
@@ -692,10 +713,57 @@ class OrderScreen extends React.Component {
                         fontWeight: 'bold',
                         fontSize: 18,
                       }}>
-                      No
+                      Dismiss
                     </Text>
                   </TouchableOpacity>
                 </View>
+              </View>
+            </Modal>
+            <Modal
+              transparent
+              animationType="fade"
+              onRequestClose={() => {
+                this.setState({infoVisible: false});
+              }}
+              visible={this.state.infoVisible}>
+              <View style={styles.modal}>
+                <Text
+                  style={{
+                    fontWeight: 'bold',
+                    fontSize: 18,
+                    marginBottom: 8,
+                    textAlign: 'center',
+                  }}>
+                  Cancel Reason
+                </Text>
+                <Text style={{textAlign: 'center', marginBottom: 12}}>
+                  This order has been cancelled because{' '}
+                  {this.state.selectedItemReason}
+                </Text>
+                <Text
+                  style={{
+                    fontStyle: 'italic',
+                    color: '#a0a0a0',
+                    fontSize: 14,
+                    marginBottom: 12,
+                  }}>
+                  *Note: Your payment has been given back. Please refresh your
+                  wallet.
+                </Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    this.setState({infoVisible: false});
+                  }}>
+                  <Text
+                    style={{
+                      color: '#0ec648',
+                      textAlign: 'center',
+                      fontWeight: 'bold',
+                      fontSize: 18,
+                    }}>
+                    OK
+                  </Text>
+                </TouchableOpacity>
               </View>
             </Modal>
           </>
@@ -759,7 +827,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     paddingHorizontal: 24,
     marginTop: 8,
-    width: '30%',
   },
 });
 
