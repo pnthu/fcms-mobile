@@ -41,10 +41,10 @@ class StallListScreen extends React.Component {
 
   initData = async () => {
     try {
-      // const response = await AsyncStorage.getItem('cart');
-      // const cart = JSON.parse(response);
-      // console.log('cart', cart);
-      // cart && this.setState({cart: cart});
+      const response = await AsyncStorage.getItem('cart');
+      const cart = JSON.parse(response);
+      console.log('cart', cart);
+      cart && this.setState({cart: cart});
     } catch (error) {
       console.log('Something was wrong, ', error);
     }
